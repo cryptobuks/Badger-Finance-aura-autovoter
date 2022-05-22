@@ -1,0 +1,31 @@
+name: Test Run
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: docker-compose-ci.yml
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to DockerHub
+      run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+    - name: Build docker images
+      run: docker-compose -f $COMPOSE_FILE aura_voter
+
+    - name: PS docker containers
+      run: docker ps
+
+    - name: Run tests
+      run: docker-compose -f $COMPOSE_FILE run aura_voter pytest

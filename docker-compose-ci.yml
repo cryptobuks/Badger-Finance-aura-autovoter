@@ -1,0 +1,9 @@
+version: "3"
+services:
+
+  aura_voter:
+    build: ./
+    container_name: aura_autovoter
+    command: ["python", "main.py"]
+    env_file:
+      - .env-example
