@@ -28,7 +28,7 @@ def get_all_balancer_pools() -> Optional[List[Dict]]:
     while True:
         result = client.execute(gql(GET_BAL_POOLS_QUERY.format(first=limit, skip=offset)))
         all_pools.extend(result['pools'])
-        if not result or len(result['pools']) < limit - 1:
-            break
         offset += limit
+        if len(result['pools']) < limit - 1:
+            break
     return all_pools
