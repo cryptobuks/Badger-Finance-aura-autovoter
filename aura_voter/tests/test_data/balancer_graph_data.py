@@ -41,7 +41,7 @@ BALANCER_POOLS_DATA = {
                       'address': '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
                       'symbol': 'WETH'},
                       {
-                          'id': '0x021c343c6180f03ce9e48fae3ff432309b9af19900020000000000000000000b-',
+                          'id': '0x021c343c6180f03ce9e48fae3ff432309b9af199000200000000000000000b-',
                           'address': '0xd291e7a03283640fdc51b121ac401383a46cc623',
                           'symbol': 'RGT'}]},
               {'id': '0x0297e37f1873d2dab4487aa67cd56b58e2f27875000200000000000000000003',
