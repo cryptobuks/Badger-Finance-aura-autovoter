@@ -13,6 +13,11 @@ query {{
     id
     address
     poolType
+    tokens{{
+      id
+      address
+      symbol
+    }}
   }}
 }}
 """
