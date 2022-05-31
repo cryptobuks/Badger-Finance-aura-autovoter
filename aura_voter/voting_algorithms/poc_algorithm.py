@@ -32,12 +32,14 @@ class POCVoter:
         """
         Distributing votes across badger pools for bveAURA
         """
-        # finalized_votes = {}
-        # for pool in self.badger_pools_with_balances:
-        #     # TODO: Map pool name/id to snapshot pool value
-        #     pool_name = list(pool.keys())[0]
-        #     pool_balance = list(pool.values())[0][self.target_token_address]
-        #     finalized_votes[pool] = (
-        #         self.ALGORITHM_SETTINGS.badger_pools_fixed_vote_weight * pool_balance
-        #     )
-        # return finalized_votes
+        finalized_votes = {}
+        for pool in self.badger_pools_with_balances:
+            # TODO: Map pool name/id to snapshot pool value
+            pool_name = pool.pool_id
+            pool_balance = pool.balance
+            # For each pool we should vote badger_pools_fixed_vote_weight of bveAURA locked in that
+            # pool
+            finalized_votes[pool_name] = (
+                self.ALGORITHM_SETTINGS.badger_pools_fixed_vote_weight * pool_balance
+            )
+        return finalized_votes

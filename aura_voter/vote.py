@@ -1,11 +1,13 @@
 from decimal import Decimal
 from typing import Dict
 from typing import List
-
+from rich.console import Console
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
 from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
+
+console = Console(width=100000, height=10000)
 
 
 def collect_and_vote(dry_run=True):
@@ -27,4 +29,5 @@ def collect_and_vote(dry_run=True):
         Decimal(amount_of_locked_target_token), target_pools_with_balances,
         target_token_address=target_token,
     )
-    voter.propose_voting_choices()
+    votes = voter.propose_voting_choices()
+    console.print(votes)
