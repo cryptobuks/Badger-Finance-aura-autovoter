@@ -23,5 +23,8 @@ def collect_and_vote(dry_run=True):
         target_pools_with_balances.append(
             get_balancer_pool_token_balance(target_token, pool['id'])
         )
-    voter = POCVoter(Decimal(amount_of_locked_target_token), target_pools_with_balances)
+    voter = POCVoter(
+        Decimal(amount_of_locked_target_token), target_pools_with_balances,
+        target_token_address=target_token,
+    )
     voter.propose_voting_choices()
