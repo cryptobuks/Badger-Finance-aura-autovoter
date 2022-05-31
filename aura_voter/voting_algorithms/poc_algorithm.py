@@ -16,7 +16,7 @@ class POCVoter:
     Algorithmic voting for bveAURA on Snapshot
     """
     ALGORITHM_SETTINGS = AlgorithmSettings(
-        badger_pools_fixed_vote_weight=Decimal(90)  # In %
+        badger_pools_fixed_vote_weight=Decimal(0.9)  # In %
     )
 
     def __init__(
@@ -39,7 +39,10 @@ class POCVoter:
             pool_balance = pool.balance
             # For each pool we should vote badger_pools_fixed_vote_weight of bveAURA locked in that
             # pool
-            finalized_votes[pool_name] = (
+            finalized_votes[pool_name] = ((
                 self.ALGORITHM_SETTINGS.badger_pools_fixed_vote_weight * pool_balance
-            )
+            ) / self.locked_aura) * Decimal(100)
+        # The rest is voting for badger/wbtc
+        # TODO: Here will be bribes voting later on
+        finalized_votes['badger_wbtc'] = Decimal(100) - sum(finalized_votes.values())
         return finalized_votes
