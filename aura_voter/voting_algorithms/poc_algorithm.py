@@ -10,18 +10,27 @@ class AlgorithmSettings:
 
 
 class POCVoter:
+    """
+    Algorithmic voting for bveAURA on Snapshot
+    """
     ALGORITHM_SETTINGS = AlgorithmSettings(
         badger_pools_fixed_vote_weight=Decimal(90)  # In %
     )
 
     def __init__(
-            self, total_locked_aura: Decimal, badger_pools_with_balances: List[Dict[str, Decimal]]
+            self, total_locked_aura: Decimal, badger_pools_with_balances: List[Dict[str, Dict]]
     ):
         self.badger_pools_with_balances = badger_pools_with_balances
         self.locked_aura = total_locked_aura
 
     def propose_voting_choices(self) -> Dict[str, Decimal]:
         """
-        TBA later
+        Distributing votes across badger pools for bveAURA
         """
-        pass
+        # finalized_votes = {}
+        # for pool in self.badger_pools_with_balances:
+        #     pool_name = pool.keys()[0]
+        #     finalized_votes[pool] = (
+        #         self.ALGORITHM_SETTINGS.badger_pools_fixed_vote_weight * 1
+        #     )
+        # return finalized_votes

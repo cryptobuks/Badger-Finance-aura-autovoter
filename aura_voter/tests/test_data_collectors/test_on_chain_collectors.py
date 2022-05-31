@@ -42,9 +42,11 @@ def test_get_balancer_pool_token_balance(mocker):
         target_token=target_token,
         balancer_pool_id="some_pool_id123123",
     )
-    assert balance[Web3.toChecksumAddress(target_token)] == pytest.approx(Decimal(
-        target_token_balance / 10 ** decimals
-    ))
+    assert balance['some_pool_id123123'][Web3.toChecksumAddress(target_token)] == pytest.approx(
+        Decimal(
+            target_token_balance / 10 ** decimals
+        )
+    )
 
 
 def test_get_balancer_pool_token_balance_no_token_balance(mocker):

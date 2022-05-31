@@ -22,7 +22,7 @@ class PoolType(Enum):
     AaveLinear = "AaveLinear"
 
 
-def get_balancer_pool_token_balance(target_token: str, balancer_pool_id: str) -> Dict[str, Decimal]:
+def get_balancer_pool_token_balance(target_token: str, balancer_pool_id: str) -> Dict[str, Dict]:
     """
     Returns token balance for a given balancer pool
     """
@@ -34,11 +34,13 @@ def get_balancer_pool_token_balance(target_token: str, balancer_pool_id: str) ->
     token_contract = web3.eth.contract(
         address=web3.toChecksumAddress(target_token), abi=get_abi("ERC20")
     )
-    token_balance = {}
+    pool_token_balance = {}
     tokens, balances, _ = balancer_vault.functions.getPoolTokens(balancer_pool_id).call()
     for index, token in enumerate(tokens):
         if web3.toChecksumAddress(token) == web3.toChecksumAddress(target_token):
-            token_balance[token] = Decimal(balances[index]) / Decimal(
-                10 ** token_contract.functions.decimals().call()
-            )
-    return token_balance
+            pool_token_balance[balancer_pool_id] = {
+                token: Decimal(balances[index]) / Decimal(
+                    10 ** token_contract.functions.decimals().call()
+                )
+            }
+    return pool_token_balance
