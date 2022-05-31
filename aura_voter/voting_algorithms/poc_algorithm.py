@@ -20,11 +20,11 @@ class POCVoter:
     )
 
     def __init__(
-            self, total_locked_aura: Decimal,
+            self, total_badger_locked_aura: Decimal,
             badger_pools_with_balances: List[PoolBalance],
     ):
         self.badger_pools_with_balances = badger_pools_with_balances
-        self.locked_aura = total_locked_aura
+        self.badger_locked_aura = total_badger_locked_aura
 
     def propose_voting_choices(self) -> Dict[str, Decimal]:
         """
@@ -39,7 +39,7 @@ class POCVoter:
             # pool
             finalized_votes[pool_name] = ((
                 self.ALGORITHM_SETTINGS.badger_pools_fixed_vote_weight * pool_balance
-            ) / self.locked_aura) * Decimal(100)
+            ) / self.badger_locked_aura) * Decimal(100)
         # The rest is voting for badger/wbtc
         # TODO: Here will be bribes voting later on
         finalized_votes['badger_wbtc'] = Decimal(100) - sum(finalized_votes.values())
