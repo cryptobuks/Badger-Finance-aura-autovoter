@@ -22,11 +22,9 @@ class POCVoter:
     def __init__(
             self, total_locked_aura: Decimal,
             badger_pools_with_balances: List[PoolBalance],
-            target_token_address: str,
     ):
         self.badger_pools_with_balances = badger_pools_with_balances
         self.locked_aura = total_locked_aura
-        self.target_token_address = target_token_address
 
     def propose_voting_choices(self) -> Dict[str, Decimal]:
         """

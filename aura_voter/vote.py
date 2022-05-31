@@ -25,9 +25,9 @@ def collect_and_vote(dry_run=True):
         target_pools_with_balances.append(
             get_balancer_pool_token_balance(target_token, pool['id'])
         )
+    # TODO: Before passing pools to algorithm we have to map it to the pool names on Snapsot
     voter = POCVoter(
         Decimal(amount_of_locked_target_token), target_pools_with_balances,
-        target_token_address=target_token,
     )
     votes = voter.propose_voting_choices()
     console.print(votes)
