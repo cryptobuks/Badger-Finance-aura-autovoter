@@ -38,7 +38,7 @@ def test_sign_message(mocker):
         },
         "message": {
             'from': "0x12d8E12e981be773cb777Be342a528228b3c7661",
-            'space': "cvx.eth",
+            'space': "unknown.eth",
             'timestamp': int(time.time()),
             'proposal': "QmetYVgwr8MXEBVg4gHNNK2D5Jre18vtJgC14VhDirh4VJ",
             'choice': "pogger",
