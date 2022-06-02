@@ -41,6 +41,17 @@ def test_voter(mocker):
                                     100000
                                 ),
                                 )
+                            )),
+                            getPool=MagicMock(return_value=MagicMock(
+                                call=MagicMock(return_value=(
+                                    "0x0BF37157d30dFe6f56757DCadff01AEd83b08cD6",
+                                    2,
+                                ))
+                            )),
+                            getPoolGauge=MagicMock(return_value=MagicMock(
+                                call=MagicMock(
+                                    return_value="0xb460DAa847c45f1C4a41cb05BFB3b51c92e41B36"
+                                )
                             ))
                         )
                     )
