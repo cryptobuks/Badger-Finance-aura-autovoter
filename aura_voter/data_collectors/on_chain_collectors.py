@@ -58,5 +58,7 @@ def does_pool_have_gauge(balancer_pool_id: str) -> bool:
     pool_gauge = liquidity_gauge_factory.functions.getPoolGauge(balancer_pool_address).call()
     if web3.toChecksumAddress(pool_gauge) == web3.toChecksumAddress(DEFAULT_ADDRESS):
         return False
-    else:
+    elif is_address(pool_gauge):
         return True
+    else:
+        return False
