@@ -33,3 +33,7 @@ def get_balancer_pool_token_balance(
             )
             break
     return pool_token_balance
+
+
+def does_pool_have_gauge(balancer_pool_id: str) -> bool:
+    pass
