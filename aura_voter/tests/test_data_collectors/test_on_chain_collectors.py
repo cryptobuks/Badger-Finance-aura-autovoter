@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from web3 import Web3
 
+from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 
 
@@ -87,3 +88,36 @@ def test_get_balancer_pool_token_balance_no_token_balance(mocker):
         balancer_pool_id="some_pool_id123123",
     )
     assert balance is None
+
+
+def test_does_pool_have_gauge_happy(mocker):
+    """
+    Happy path when balancer pool has gauge so we can vote for it
+    """
+    mocker.patch(
+        "aura_voter.data_collectors.on_chain_collectors.get_web3",
+        return_value=MagicMock(
+            eth=MagicMock(
+                contract=MagicMock(
+                    return_value=MagicMock(
+                        functions=MagicMock(
+                            getPool=MagicMock(return_value=MagicMock(
+                                call=MagicMock(return_value=(
+                                    "0x0BF37157d30dFe6f56757DCadff01AEd83b08cD6",
+                                    2,
+                                ))
+                            )),
+                            getPoolGauge=MagicMock(return_value=MagicMock(
+                                call=MagicMock(
+                                    return_value="0xb460DAa847c45f1C4a41cb05BFB3b51c92e41B36"
+                                )
+                            ))
+                        )
+                    )
+                )
+            ),
+            toChecksumAddress=Web3.toChecksumAddress)
+    )
+    assert does_pool_have_gauge(
+        "0xb460daa847c45f1c4a41cb05bfb3b51c92e41b36000200000000000000000194"
+    ) is True
