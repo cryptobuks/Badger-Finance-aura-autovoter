@@ -155,3 +155,16 @@ def test_does_pool_have_gauge_no_gauge(mocker):
     assert does_pool_have_gauge(
         "0xb460daa847c45f1c4a41cb05bfb3b51c92e41b36000200000000000000000149"
     ) is False
+
+
+def test_does_pool_have_gauge_invalid_pool_id(mocker):
+    """
+    Test case when BAL pool id is mistaken for address
+    In this case exception will be raised
+    """
+    mocker.patch(
+        "aura_voter.data_collectors.on_chain_collectors.get_web3",
+    )
+    with pytest.raises(ValueError) as exc:
+        does_pool_have_gauge("0x0BF37157d30dFe6f56757DCadff01AEd83b08cD6")
+    assert str(exc.value) == "balancer_pool_id should not be an address"
