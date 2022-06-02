@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from web3 import Web3
 
-from aura_voter.constants import DEFAULT_ADDRESS
+from aura_voter.constants import ZERO_ADDRESS
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 
@@ -143,7 +143,7 @@ def test_does_pool_have_gauge_no_gauge(mocker):
                             )),
                             getPoolGauge=MagicMock(return_value=MagicMock(
                                 call=MagicMock(
-                                    return_value=DEFAULT_ADDRESS
+                                    return_value=ZERO_ADDRESS
                                 )
                             ))
                         )

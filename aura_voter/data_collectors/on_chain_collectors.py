@@ -5,7 +5,7 @@ from eth_utils import is_address
 
 from aura_voter.constants import BALANCER_LIQUIDITY_GAUGE_FACTORY
 from aura_voter.constants import BALANCER_VAULT_ADDRESS
-from aura_voter.constants import DEFAULT_ADDRESS
+from aura_voter.constants import ZERO_ADDRESS
 from aura_voter.data_collectors import PoolBalance
 from aura_voter.utils import get_abi
 from aura_voter.web3 import get_web3
@@ -56,7 +56,7 @@ def does_pool_have_gauge(balancer_pool_id: str) -> bool:
         abi=get_abi("LiquidityGaugeFactory")
     )
     pool_gauge = liquidity_gauge_factory.functions.getPoolGauge(balancer_pool_address).call()
-    if web3.toChecksumAddress(pool_gauge) == web3.toChecksumAddress(DEFAULT_ADDRESS):
+    if web3.toChecksumAddress(pool_gauge) == web3.toChecksumAddress(ZERO_ADDRESS):
         return False
     elif is_address(pool_gauge):
         return True
