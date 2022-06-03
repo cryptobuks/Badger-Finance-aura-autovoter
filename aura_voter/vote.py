@@ -16,7 +16,8 @@ console = Console(width=100000, height=10000)
 
 
 def collect_and_vote(dry_run=True):
-    amount_of_locked_target_token = 123  # TODO: Add this when bveAURA launches
+    # TODO: Add this when bveAURA launches
+    amount_of_locked_target_token = Decimal(24004620.088791137751441867)
     send_message_to_discord(
         "🗳️🗳️🗳️🗳️ New voting round 🗳️🗳️🗳️🗳️",
         username=BOT_USERNAME
