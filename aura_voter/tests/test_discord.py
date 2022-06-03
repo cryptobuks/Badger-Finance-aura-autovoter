@@ -9,7 +9,7 @@ from aura_voter.discord import send_message_to_discord
 
 def test_send_code_block_to_discord_happy(mocker):
     discord = mocker.patch(
-        "voter.discord.Webhook.from_url",
+        "aura_voter.discord.Webhook.from_url",
         MagicMock()
     )
     send_code_block_to_discord(msg="message", username=BOT_USERNAME)
@@ -19,7 +19,7 @@ def test_send_code_block_to_discord_happy(mocker):
 
 def test_send_code_block_to_discord_bad_url(mocker):
     discord = mocker.patch(
-        "voter.discord.Webhook.from_url",
+        "aura_voter.discord.Webhook.from_url",
         side_effect=InvalidArgument()
     )
     send_code_block_to_discord(msg="message", username=BOT_USERNAME)
@@ -29,7 +29,7 @@ def test_send_code_block_to_discord_bad_url(mocker):
 
 def test_send_mesage_to_discord_happy(mocker):
     discord = mocker.patch(
-        "voter.discord.Webhook.from_url",
+        "aura_voter.discord.Webhook.from_url",
         MagicMock()
     )
     send_message_to_discord(msg="message", username=BOT_USERNAME)
@@ -39,7 +39,7 @@ def test_send_mesage_to_discord_happy(mocker):
 
 def test_send_send_mesage_to_discord_bad_url(mocker):
     discord = mocker.patch(
-        "voter.discord.Webhook.from_url",
+        "aura_voter.discord.Webhook.from_url",
         side_effect=InvalidArgument()
     )
     send_message_to_discord(msg="message", username=BOT_USERNAME)

@@ -10,6 +10,9 @@ def test_voter(mocker):
     """
     Dummy test to make sure everything works
     """
+    discord = mocker.patch(
+        "aura_voter.vote.send_message_to_discord"
+    )
     client = mocker.patch(
         'aura_voter.data_collectors.graph_collectors.make_gql_client',
         return_value=MagicMock(
@@ -61,3 +64,4 @@ def test_voter(mocker):
     )
     collect_and_vote()
     client.return_value.execute.assert_called_once()
+    assert discord.called
