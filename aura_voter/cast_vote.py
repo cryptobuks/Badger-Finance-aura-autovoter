@@ -62,8 +62,7 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
         "domain": SNAPSHOT_DOMAIN,
         "message": {
             'from': voter_address,
-            # TODO: Space not known yet
-            'space': "??",
+            'space': "aurafinance.eth",
             'timestamp': int(time.time()),
             'proposal': snapshot_id,
             'choice': json.dumps(votes, use_decimal=True),
