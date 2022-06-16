@@ -31,6 +31,9 @@ def test_voter(mocker):
                 contract=MagicMock(
                     return_value=MagicMock(
                         functions=MagicMock(
+                            balanceOf=MagicMock(return_value=MagicMock(
+                                call=MagicMock(return_value=24004620088791137751441867)
+                            )),
                             decimals=MagicMock(return_value=MagicMock(
                                 call=MagicMock(return_value=decimals)
                             )),

@@ -9,6 +9,7 @@ from aura_voter.data_collectors.data_processors import extract_pools_with_target
 from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
+from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
 from aura_voter.discord import send_message_to_discord
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
 
@@ -17,7 +18,7 @@ console = Console(width=100000, height=10000)
 
 def collect_and_vote(dry_run=True):
     # TODO: Add this when bveAURA launches
-    amount_of_locked_target_token = Decimal(24004620.088791137751441867)
+    amount_of_locked_target_token = get_locked_graviaura_amount()
     send_message_to_discord(
         "🗳️🗳️🗳️🗳️ New voting round 🗳️🗳️🗳️🗳️",
         username=BOT_USERNAME
