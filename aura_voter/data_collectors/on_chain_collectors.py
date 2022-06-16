@@ -3,12 +3,26 @@ from typing import Optional
 
 from eth_utils import is_address
 
+from aura_voter.constants import AURA_LOCKER_ADDRESS
+from aura_voter.constants import BADGER_LOCKER_ADDRESS
 from aura_voter.constants import BALANCER_LIQUIDITY_GAUGE_FACTORY
 from aura_voter.constants import BALANCER_VAULT_ADDRESS
 from aura_voter.constants import ZERO_ADDRESS
 from aura_voter.data_collectors import PoolBalance
 from aura_voter.utils import get_abi
 from aura_voter.web3 import get_web3
+
+
+def get_locked_graviaura_amount() -> Decimal:
+    web3 = get_web3()
+    abi = get_abi("AuraLocker")
+    contract = web3.eth.contract(address=web3.toChecksumAddress(AURA_LOCKER_ADDRESS), abi=abi)
+    vl_aura_amount = contract.functions.balanceOf(
+        web3.toChecksumAddress(BADGER_LOCKER_ADDRESS)).call()
+
+    return Decimal(vl_aura_amount) / Decimal(
+        10 ** contract.functions.decimals().call()
+    )
 
 
 def get_balancer_pool_token_balance(

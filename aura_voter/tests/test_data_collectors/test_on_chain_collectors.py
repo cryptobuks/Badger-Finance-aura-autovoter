@@ -7,6 +7,31 @@ from web3 import Web3
 from aura_voter.constants import ZERO_ADDRESS
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
+from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
+
+
+def test_get_locked_aura_amount(mocker):
+    balance = 10000000000000000000
+    decimals = 18
+    mocker.patch(
+        "aura_voter.data_collectors.on_chain_collectors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            contract=MagicMock(
+                return_value=MagicMock(
+                    functions=MagicMock(
+                        balanceOf=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=balance)
+                        )),
+                        decimals=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=decimals)
+                        )),
+                    )
+                )
+            )
+        ))
+    )
+    bve_cvx_locked = get_locked_graviaura_amount()
+    assert bve_cvx_locked == balance / 10 ** decimals
 
 
 def test_get_balancer_pool_token_balance(mocker):
