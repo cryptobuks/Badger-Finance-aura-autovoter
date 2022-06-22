@@ -9,7 +9,6 @@ WORKDIR $APP_HOME
 COPY . ./
 
 RUN apt-get update -y
-RUN apt-get install gzip>=1.10-4+deb11u1 -y
 RUN apt-get install linux-libc-dev>=5.10.120-1 -y
 
 RUN pip install --upgrade pip
