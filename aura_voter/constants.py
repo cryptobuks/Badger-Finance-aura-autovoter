@@ -11,9 +11,9 @@ DISCORD_WEBHOOK_SECRET_KEY = "DISCORD_WEBHOOK_URL"
 
 REGION = "us-west-1"
 # TODO: Fill in proper assume role once IaC is applied
-ASSUME_ROLE_ARN = "arn:aws:iam::747584148381:role/"
-AURA_VOTER_SECRET_ID = "/aura_voter/private"
+AURA_VOTER_SECRET_ID = "/cvxvoter/private"
 AURA_VOTER_SECRET_KEY = "VOTER"
+ASSUME_ROLE_ARN = "arn:aws:iam::747584148381:role/cvxvoter20211004170419945600000002"
 
 
 # Balancer Addresses
