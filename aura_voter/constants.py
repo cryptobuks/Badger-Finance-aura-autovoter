@@ -6,7 +6,7 @@ SNAPSHOT_VOTE_API = "https://hub.snapshot.org/api/msg"
 ETHNODEURL_SECRET_ID = "quiknode/eth-node-url"
 ETHNODEURL_SECRET_KEY = "NODE_URL"
 
-DISCORD_WEBHOOK_SECRET_ID = "aura-autovoter/discord-webhook"
+DISCORD_WEBHOOK_SECRET_ID = "aura-voter/discord-webhook"
 DISCORD_WEBHOOK_SECRET_KEY = "DISCORD_WEBHOOK_URL"
 
 REGION = "us-west-1"
