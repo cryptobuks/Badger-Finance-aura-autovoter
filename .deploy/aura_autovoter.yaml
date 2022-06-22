@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+    name: aura-autovoter
+    labels:
+        app: aura-autovoter
+spec:
+    schedule: '0 * * * 0-2,6'
+    startingDeadlineSeconds: 180
+    suspend: false
+    jobTemplate:
+        spec:
+            template:
+                spec:
+                    serviceAccountName: aura-autovoter
+                    containers:
+                        - name: aura-autovoter
+                          image: IMAGE_NAME
+                          imagePullPolicy: IfNotPresent
+                          command: ["python", "main.py"]
+                          env:
+                              - name: LOG_LEVEL
+                                value: 'info'
+                    restartPolicy: OnFailure
