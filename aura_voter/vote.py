@@ -13,6 +13,8 @@ from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_tok
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.discord import send_message_to_discord
+from aura_voter.utils import map_choice_id_to_pool_name
+from aura_voter.utils import reverse_choice_to_pool_name
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
 
 console = Console(width=100000, height=10000)
@@ -58,4 +60,7 @@ def collect_and_vote(dry_run=True):
         Decimal(amount_of_locked_aura), target_pools_with_balances,
     )
     votes = voter.propose_voting_choices()
-    console.print(votes)
+    choices = map_choice_id_to_pool_name(snapshot['choices'])
+    reversed_choices = reverse_choice_to_pool_name(choices)
+    snapshot_formatted_votes = {reversed_choices[pool]: vote for pool, vote in votes.items()}
+    console.print(snapshot_formatted_votes)

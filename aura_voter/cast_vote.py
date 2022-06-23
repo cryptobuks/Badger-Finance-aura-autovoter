@@ -35,7 +35,7 @@ SNAPSHOT_TYPES = {
         {'name': 'from', 'type': 'address'},
         {'name': 'space', 'type': 'string'},
         {'name': 'timestamp', 'type': 'uint64'},
-        {'name': 'proposal', 'type': 'string'},
+        {'name': 'proposal', 'type': 'bytes32'},
         {'name': 'choice', 'type': 'string'},
         {'name': 'metadata', 'type': 'string'}
     ],
