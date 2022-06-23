@@ -11,6 +11,7 @@ from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
+from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.discord import send_message_to_discord
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
 
@@ -28,6 +29,15 @@ def collect_and_vote(dry_run=True):
         f"> Locked AURA amount is: {round(amount_of_locked_aura, 2)}",
         username=BOT_USERNAME
     )
+    snapshot = get_gauge_weight_snapshot()
+    if snapshot:
+        send_message_to_discord(
+            f"> Fetched gauge proposal snapshot: {snapshot['id']}",
+            username=BOT_USERNAME,
+        )
+    else:
+        send_message_to_discord("> No active proposal found", username=BOT_USERNAME)
+        return
     all_balancer_pools = get_all_balancer_pools()  # type: List[Dict]
     # TODO: target target token should be changed to bveAURA once we know the address
     target_token = GRAVIAURA
