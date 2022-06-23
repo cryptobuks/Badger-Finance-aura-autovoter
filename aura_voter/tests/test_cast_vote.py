@@ -82,4 +82,4 @@ def test_cast_vote_error(mocker):
             votes={'1': 1},
             snapshot_id="123",
         )
-    assert str(exc.value) == "Invalid Snapshot API call"
+    assert str(exc.value) == "Voting failed on Snapshot. Error: {}"

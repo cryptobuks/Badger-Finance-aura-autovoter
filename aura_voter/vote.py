@@ -5,6 +5,7 @@ from typing import List
 from rich.console import Console
 from tabulate import tabulate
 
+from aura_voter.cast_vote import FailedToVoteException
 from aura_voter.cast_vote import cast_vote
 from aura_voter.constants import BOT_USERNAME
 from aura_voter.constants import GRAVIAURA
@@ -87,5 +88,9 @@ def collect_and_vote(dry_run=True):
     console.print(table, style="bold")
     send_code_block_to_discord(msg=table, username=BOT_USERNAME)
     if not dry_run:
-        cast_vote(snapshot_formatted_votes, snapshot['id'])
-        send_message_to_discord("> 🤑🤑🤑🤑 Voting Succeeded 🤑🤑🤑🤑", username=BOT_USERNAME)
+        try:
+            cast_vote(snapshot_formatted_votes, snapshot['id'])
+        except FailedToVoteException as e:
+            send_message_to_discord(f"> Voting failed with reason: {str(e)}", username=BOT_USERNAME)
+        else:
+            send_message_to_discord("> 🤑🤑🤑🤑 Voting Succeeded 🤑🤑🤑🤑", username=BOT_USERNAME)

@@ -87,5 +87,4 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
         }, use_decimal=True)
     )
     if not response.ok:
-        logger.error(f"Voting failed on Snapshot. Error: {response.text}")
-        raise FailedToVoteException("Invalid Snapshot API call")
+        raise FailedToVoteException(f"Voting failed on Snapshot. Error: {response.text}")
