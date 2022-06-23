@@ -26,6 +26,7 @@ def test_voter(mocker):
         'aura_voter.vote.get_gauge_weight_snapshot',
         return_value=PROPOSAL_TEST_DATA['proposals'][0]
     )
+    cast_vote = mocker.patch('aura_voter.vote.cast_vote')
     target_token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"  # WETH for testing
     target_token_balance = 735228173522811111
     decimals = 18
@@ -70,6 +71,7 @@ def test_voter(mocker):
             ),
             toChecksumAddress=Web3.toChecksumAddress)
     )
-    collect_and_vote()
+    collect_and_vote(dry_run=False)
     client.return_value.execute.assert_called_once()
     assert discord.called
+    assert cast_vote.called

@@ -5,6 +5,7 @@ from typing import List
 from rich.console import Console
 from tabulate import tabulate
 
+from aura_voter.cast_vote import cast_vote
 from aura_voter.constants import BOT_USERNAME
 from aura_voter.constants import GRAVIAURA
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
@@ -43,11 +44,9 @@ def collect_and_vote(dry_run=True):
         send_message_to_discord("> No active proposal found", username=BOT_USERNAME)
         return
     all_balancer_pools = get_all_balancer_pools()  # type: List[Dict]
-    # TODO: target target token should be changed to bveAURA once we know the address
-    target_token = GRAVIAURA
     # Extract only pools that have target token
     target_pools = extract_pools_with_target_token_included(
-        token_addr=target_token,
+        token_addr=GRAVIAURA,
         subgraph_pool_data=all_balancer_pools
     )
     # Filter out pools without gauges
@@ -55,13 +54,17 @@ def collect_and_vote(dry_run=True):
     target_pools_with_balances = []
     for pool in pools_with_gauges:
         target_pools_with_balances.append(
-            get_balancer_pool_token_balance(target_token, pool['id'])
+            get_balancer_pool_token_balance(GRAVIAURA, pool['id'])
         )
     # TODO: Before passing pools to algorithm we have to map it to the pool names on Snapsot
     voter = POCVoter(
         Decimal(amount_of_locked_aura), target_pools_with_balances,
     )
     votes = voter.propose_voting_choices()
+    if not votes:
+        send_message_to_discord("> Nothing to vote for now", username=BOT_USERNAME)
+        return
+
     choices = map_choice_id_to_pool_name(snapshot['choices'])
     reversed_choices = reverse_choice_to_pool_name(choices)
     snapshot_formatted_votes = {reversed_choices[pool]: vote for pool, vote in votes.items()}
@@ -77,9 +80,12 @@ def collect_and_vote(dry_run=True):
             ]
         )
     table = tabulate(suggesting_votes_table,
-                     tablefmt="simple",
+                     tablefmt="grid",
                      headers=[
                          "Pool name", "Suggested vote", "AURA To Vote",
                      ])
     console.print(table, style="bold")
     send_code_block_to_discord(msg=table, username=BOT_USERNAME)
+    if not dry_run:
+        cast_vote(snapshot_formatted_votes, snapshot['id'])
+        send_message_to_discord("> 🤑🤑🤑🤑 Voting Succeeded 🤑🤑🤑🤑", username=BOT_USERNAME)
