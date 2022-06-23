@@ -76,6 +76,8 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
     )
     payload.pop("primaryType")
     payload['types'].pop("EIP712Domain")
+    # Convert back bytes32 to string to stringify this to json
+    payload['message']['proposal'] = Web3.toHex(payload['message']['proposal'])
     response = requests.post(
         SNAPSHOT_VOTE_API,
         headers=SNAPSHOT_DEFAULT_HEADERS,
