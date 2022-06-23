@@ -1,19 +1,18 @@
 import time
+from copy import deepcopy
 from typing import Dict
 
 import requests
 import simplejson as json
-from copy import deepcopy
 from web3 import Web3
 
 from aura_voter.aws import get_secret
 from aura_voter.constants import ASSUME_ROLE_ARN
-from aura_voter.constants import BADGER_VOTER_ADDRESS
 from aura_voter.constants import AURA_VOTER_SECRET_ID
 from aura_voter.constants import AURA_VOTER_SECRET_KEY
+from aura_voter.constants import BADGER_VOTER_ADDRESS
 from aura_voter.constants import REGION
 from aura_voter.constants import SNAPSHOT_VOTE_API
-from aura_voter.rich_logger import logger
 from aura_voter.utils import sign_message
 
 
