@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 
+from aura_voter.constants import BADGER_WBTC_POOL_NAME
 from aura_voter.data_collectors import PoolBalance
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
 
@@ -29,7 +30,7 @@ def test_poc_algorithm_happy_simple_data():
     voter = POCVoter(locked_aura, balances)
     votes = voter.propose_voting_choices()
     assert votes == {
-        'badger_wbtc': Decimal('99.27999999999999998223643161'),
+        BADGER_WBTC_POOL_NAME: Decimal('99.27999999999999998223643161'),
         'some_pool1': Decimal('0.09000000000000000222044604925'),
         'some_pool2': Decimal('0.2700000000000000066613381478'),
         'some_pool3': Decimal('0.3600000000000000088817841970')
@@ -60,4 +61,4 @@ def test_poc_algorithm_calc_comparison(balance):
     assert pool_expected_vote == votes['some_pool']
 
     badger_wbtc_expected_vote = Decimal(100) - pool_expected_vote
-    assert badger_wbtc_expected_vote == votes['badger_wbtc']
+    assert badger_wbtc_expected_vote == votes[BADGER_WBTC_POOL_NAME]

@@ -3,7 +3,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
 from aura_voter.utils import get_abi
+from aura_voter.utils import map_choice_id_to_pool_name
+from aura_voter.utils import reverse_choice_to_pool_name
 from aura_voter.utils import sign_message
 
 
@@ -69,3 +72,20 @@ def test_sign_message(mocker):
     )
     assert signature == '9da71250afd0b62720202020202020202020202020202' \
                         '0202020202078396206c5fd2fb9837927b3ff9e05cf'
+
+
+def test_map_choice_id_to_pool_name():
+    gauge_pool_snapshot = PROPOSAL_TEST_DATA['proposals'][0]
+    mapped_pools = map_choice_id_to_pool_name(gauge_pool_snapshot['choices'])
+    assert len(mapped_pools) == len(gauge_pool_snapshot['choices'])
+
+
+def test_reverse_choice_to_pool_name():
+    gauge_pool_snapshot = PROPOSAL_TEST_DATA['proposals'][0]
+    mapped_pools = map_choice_id_to_pool_name(gauge_pool_snapshot['choices'])
+    reversed_pools = reverse_choice_to_pool_name(mapped_pools)
+    assert len(reversed_pools) == len(gauge_pool_snapshot['choices'])
+
+
+def test_test_map_choice_id_to_pool_name_empty():
+    assert map_choice_id_to_pool_name([]) == {}

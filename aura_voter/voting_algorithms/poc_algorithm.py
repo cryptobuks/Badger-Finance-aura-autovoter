@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Dict
 from typing import List
 
+from aura_voter.constants import BADGER_WBTC_POOL_NAME
 from aura_voter.data_collectors import PoolBalance
 
 
@@ -42,5 +43,5 @@ class POCVoter:
             ) / self.badger_locked_aura) * Decimal(100)
         # The rest is voting for badger/wbtc
         # TODO: Here will be bribes voting later on
-        finalized_votes['badger_wbtc'] = Decimal(100) - sum(finalized_votes.values())
+        finalized_votes[BADGER_WBTC_POOL_NAME] = Decimal(100) - sum(finalized_votes.values())
         return finalized_votes
