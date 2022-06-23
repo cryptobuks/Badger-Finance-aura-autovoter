@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from web3 import Web3
 
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
+from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
 from aura_voter.vote import collect_and_vote
 
 
@@ -20,6 +21,10 @@ def test_voter(mocker):
                 return_value=BALANCER_POOLS_DATA,
             )
         )
+    )
+    mocker.patch(
+        'aura_voter.vote.get_gauge_weight_snapshot',
+        return_value=PROPOSAL_TEST_DATA['proposals'][0]
     )
     target_token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"  # WETH for testing
     target_token_balance = 735228173522811111
