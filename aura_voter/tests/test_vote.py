@@ -14,6 +14,9 @@ def test_voter(mocker):
     discord = mocker.patch(
         "aura_voter.vote.send_message_to_discord"
     )
+    mocker.patch(
+        "aura_voter.vote.send_code_block_to_discord"
+    )
     client = mocker.patch(
         'aura_voter.data_collectors.graph_collectors.make_gql_client',
         return_value=MagicMock(
@@ -37,7 +40,7 @@ def test_voter(mocker):
                 contract=MagicMock(
                     return_value=MagicMock(
                         functions=MagicMock(
-                            balanceOf=MagicMock(return_value=MagicMock(
+                            getVotes=MagicMock(return_value=MagicMock(
                                 call=MagicMock(return_value=24004620088791137751441867)
                             )),
                             decimals=MagicMock(return_value=MagicMock(

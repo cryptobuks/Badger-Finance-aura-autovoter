@@ -19,7 +19,7 @@ def test_get_locked_aura_amount(mocker):
             contract=MagicMock(
                 return_value=MagicMock(
                     functions=MagicMock(
-                        balanceOf=MagicMock(return_value=MagicMock(
+                        getVotes=MagicMock(return_value=MagicMock(
                             call=MagicMock(return_value=balance)
                         )),
                         decimals=MagicMock(return_value=MagicMock(
