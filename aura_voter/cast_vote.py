@@ -63,7 +63,7 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
             'from': voter_address,
             'space': "aurafinance.eth",
             'timestamp': int(time.time()),
-            'proposal': snapshot_id.encode(),
+            'proposal': Web3.toBytes(hexstr=snapshot_id),
             'choice': json.dumps(votes, use_decimal=True),
             'metadata': json.dumps({}),
         },
