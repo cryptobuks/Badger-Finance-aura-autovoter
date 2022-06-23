@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 
 from rich.console import Console
+from tabulate import tabulate
 
 from aura_voter.constants import BOT_USERNAME
 from aura_voter.constants import GRAVIAURA
@@ -12,6 +13,7 @@ from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
+from aura_voter.discord import send_code_block_to_discord
 from aura_voter.discord import send_message_to_discord
 from aura_voter.utils import map_choice_id_to_pool_name
 from aura_voter.utils import reverse_choice_to_pool_name
@@ -64,3 +66,20 @@ def collect_and_vote(dry_run=True):
     reversed_choices = reverse_choice_to_pool_name(choices)
     snapshot_formatted_votes = {reversed_choices[pool]: vote for pool, vote in votes.items()}
     console.print(snapshot_formatted_votes)
+    suggesting_votes_table = []
+    for pool, voting_weight in votes.items():
+        vote_power = amount_of_locked_aura * (voting_weight / 100)
+        suggesting_votes_table.append(
+            [
+                pool,
+                f"{round(voting_weight, 2)}%",
+                f"{round(vote_power, 2)}",
+            ]
+        )
+    table = tabulate(suggesting_votes_table,
+                     tablefmt="simple",
+                     headers=[
+                         "Pool name", "Suggested vote", "AURA To Vote",
+                     ])
+    console.print(table, style="bold")
+    send_code_block_to_discord(msg=table, username=BOT_USERNAME)
