@@ -90,7 +90,7 @@ def collect_and_vote(dry_run=True):
     if not dry_run:
         try:
             cast_vote(snapshot_formatted_votes, snapshot['id'])
-        except FailedToVoteException as e:
+        except (FailedToVoteException, Exception) as e:
             send_message_to_discord(f"> Voting failed with reason: {str(e)}", username=BOT_USERNAME)
         else:
             send_message_to_discord("> 🤑🤑🤑🤑 Voting Succeeded 🤑🤑🤑🤑", username=BOT_USERNAME)
