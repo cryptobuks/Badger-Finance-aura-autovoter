@@ -39,6 +39,13 @@ def test_poc_algorithm_happy_simple_data():
     assert sum(votes.values()) == Decimal(100)
 
 
+def test_poc_algorithm_stable_vote():
+    voter = POCVoter(Decimal(1000), [])
+    assert voter.propose_voting_choices_stable() == {
+        BADGER_WBTC_POOL_NAME: Decimal(100)
+    }
+
+
 @pytest.mark.parametrize(
     "balance",
     [

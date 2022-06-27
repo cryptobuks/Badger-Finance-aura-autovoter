@@ -45,3 +45,9 @@ class POCVoter:
         # TODO: Here will be bribes voting later on
         finalized_votes[BADGER_WBTC_POOL_NAME] = Decimal(100) - sum(finalized_votes.values())
         return finalized_votes
+
+    def propose_voting_choices_stable(self) -> Dict[str, Decimal]:
+        """
+        Stub method to vote 100% for ecosystem pool
+        """
+        return {BADGER_WBTC_POOL_NAME: Decimal(100)}
