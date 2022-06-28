@@ -46,6 +46,38 @@ query {
 """)
 
 
+GET_SINGLE_PROPOSAL_Q = lambda snapshot_id: gql(f"""
+query {{
+  proposals (
+    first: 10,
+    skip: 0,
+    where: {{
+      space_in: ["aurafinance.eth"],
+      network_in: ["1"]
+      id: "{snapshot_id}"
+    }},
+    orderBy: "created",
+    orderDirection: desc
+  ) {{
+    id
+    title
+    body
+    start
+    end
+    snapshot
+    choices
+    network
+    state
+    author
+    space {{
+      id
+      name
+    }}
+  }}
+}}
+""")
+
+
 def get_gauge_weight_snapshot() -> Optional[Dict]:
     """
     Using title re match and some pool heuristics, tries to get current active
@@ -70,3 +102,14 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
                 gauge_proposal = proposal
                 break
     return gauge_proposal
+
+
+def get_snapshot_by_id(snapshot_id: str) -> Optional[Dict]:
+    """
+    Get single snapshot by id
+    """
+    client = make_gql_client(SNAPSHOT_GQL_API_URL)
+    result = client.execute(GET_SINGLE_PROPOSAL_Q(snapshot_id))
+    if not result or not result.get("proposals"):
+        return
+    return result['proposals'][0]

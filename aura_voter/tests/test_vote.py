@@ -67,7 +67,17 @@ def test_voter(mocker):
                                 call=MagicMock(
                                     return_value="0xb460DAa847c45f1C4a41cb05BFB3b51c92e41B36"
                                 )
-                            ))
+                            )),
+                            is_killed=MagicMock(return_value=MagicMock(
+                                call=MagicMock(
+                                    return_value=False
+                                )
+                            )),
+                            working_supply=MagicMock(return_value=MagicMock(
+                                call=MagicMock(
+                                    return_value=123123
+                                )
+                            )),
                         )
                     )
                 )
