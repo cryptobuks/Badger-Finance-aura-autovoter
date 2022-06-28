@@ -49,7 +49,7 @@ query {
 GET_SINGLE_PROPOSAL_Q = lambda snapshot_id: gql(f"""
 query {{
   proposals (
-    first: 10,
+    first: 1,
     skip: 0,
     where: {{
       space_in: ["aurafinance.eth"],
