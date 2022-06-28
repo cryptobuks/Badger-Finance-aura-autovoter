@@ -80,7 +80,7 @@ def does_pool_have_gauge(balancer_pool_id: str) -> bool:
     )
     is_gauge_killed = gauge_contract.functions.is_killed().call()
     working_supply = gauge_contract.functions.working_supply().call()
-    # This condition means that pool gauge was killed or
+    # This condition means that pool gauge was killed or has no liquidity so we can't vote for it
     if is_gauge_killed is True or working_supply == 0:
         return False
     else:
