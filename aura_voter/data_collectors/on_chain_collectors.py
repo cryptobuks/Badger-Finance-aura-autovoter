@@ -69,12 +69,19 @@ def does_pool_have_gauge(balancer_pool_id: str) -> bool:
         address=web3.toChecksumAddress(BALANCER_LIQUIDITY_GAUGE_FACTORY),
         abi=get_abi("LiquidityGaugeFactory")
     )
-    pool_gauge = web3.toChecksumAddress(
+    pool_gauge_address = web3.toChecksumAddress(
         liquidity_gauge_factory.functions.getPoolGauge(balancer_pool_address).call()
     )
-    if pool_gauge == web3.toChecksumAddress(ZERO_ADDRESS):
+    if pool_gauge_address == web3.toChecksumAddress(ZERO_ADDRESS):
         return False
-    elif is_address(pool_gauge):
-        return True
+    gauge_contract = web3.eth.contract(
+        address=web3.toChecksumAddress(pool_gauge_address),
+        abi=get_abi("BalancerGauge")
+    )
+    is_gauge_killed = gauge_contract.functions.is_killed().call()
+    working_supply = gauge_contract.functions.working_supply().call()
+    # This condition means that pool gauge was killed or
+    if is_gauge_killed is True or working_supply == 0:
+        return False
     else:
-        return False
+        return True
