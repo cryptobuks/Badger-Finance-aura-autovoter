@@ -40,6 +40,23 @@ SNAPSHOT_TYPES = {
     ],
 }
 
+
+SNAPSHOT_SINGLE_CHOICE_TYPES = {
+    'EIP712Domain': [
+        {'name': 'name', 'type': 'string'},
+        {'name': 'version', 'type': 'string'},
+    ],
+    "Vote": [
+        {'name': 'from', 'type': 'address'},
+        {'name': 'space', 'type': 'string'},
+        {'name': 'timestamp', 'type': 'uint64'},
+        {'name': 'proposal', 'type': 'bytes32'},
+        {'name': 'choice', 'type': 'uint32'},
+        {'name': 'metadata', 'type': 'string'}
+    ],
+}
+
+
 SNAPSHOT_DOMAIN = {
     'name': "snapshot",
     'version': "0.1.4",
@@ -89,3 +106,21 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
     )
     if not response.ok:
         raise FailedToVoteException(f"Voting failed on Snapshot. Error: {response.text}")
+
+
+def cast_single_choice_vote(choice: int, snapshot_id: str) -> None:
+    types = deepcopy(SNAPSHOT_SINGLE_CHOICE_TYPES)
+    payload = {
+        "domain": SNAPSHOT_DOMAIN,
+        "message": {
+            'from': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
+            'space': "cvx.eth",
+            'timestamp': int(time.time()),
+            'proposal': snapshot_id,
+            'choice': int(choice),
+            'metadata': json.dumps({}),
+        },
+        "primaryType": 'Vote',
+        "types": types,
+    }
+    _vote(payload)
