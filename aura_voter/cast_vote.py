@@ -13,6 +13,7 @@ from aura_voter.constants import AURA_VOTER_SECRET_KEY
 from aura_voter.constants import BADGER_VOTER_ADDRESS
 from aura_voter.constants import REGION
 from aura_voter.constants import SNAPSHOT_VOTE_API
+from aura_voter.rich_logger import logger
 from aura_voter.utils import sign_message
 
 
@@ -73,11 +74,10 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
     )
     if not private_key:
         raise FailedToVoteException("Can't fetch private key")
-    voter_address = Web3.toChecksumAddress(BADGER_VOTER_ADDRESS)
     payload = {
         "domain": SNAPSHOT_DOMAIN,
         "message": {
-            'from': voter_address,
+            'from': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
             'space': "aurafinance.eth",
             'timestamp': int(time.time()),
             'proposal': Web3.toBytes(hexstr=snapshot_id),
@@ -87,6 +87,39 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
         "primaryType": 'Vote',
         "types": types,
     }
+    _vote(payload)
+
+
+def cast_single_choice_vote(choice: int, snapshot_id: str) -> None:
+    """
+    Single choice voting function needed for voting on gauges etc
+    """
+    types = deepcopy(SNAPSHOT_SINGLE_CHOICE_TYPES)
+    payload = {
+        "domain": SNAPSHOT_DOMAIN,
+        "message": {
+            'from': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
+            'space': "aurafinance.eth",
+            'timestamp': int(time.time()),
+            'proposal': Web3.toBytes(hexstr=snapshot_id),
+            'choice': int(choice),
+            'metadata': json.dumps({}),
+        },
+        "primaryType": 'Vote',
+        "types": types,
+    }
+    _vote(payload)
+
+
+def _vote(payload: Dict) -> None:
+    private_key = get_secret(
+        secret_id=AURA_VOTER_SECRET_ID,
+        secret_key=AURA_VOTER_SECRET_KEY,
+        region_name=REGION,
+        assume_role_arn=ASSUME_ROLE_ARN,
+    )
+    if not private_key:
+        raise FailedToVoteException("Can't fetch private key")
     signature = sign_message(
         message=payload,
         private_key=private_key
@@ -99,28 +132,11 @@ def cast_vote(votes: Dict, snapshot_id: str) -> None:
         SNAPSHOT_VOTE_API,
         headers=SNAPSHOT_DEFAULT_HEADERS,
         data=json.dumps({
-            'address': voter_address,
+            'address': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
             'sig': signature,
             'data': payload,
         }, use_decimal=True)
     )
     if not response.ok:
+        logger.error(f"Voting failed on Snapshot. Error: {response.text}")
         raise FailedToVoteException(f"Voting failed on Snapshot. Error: {response.text}")
-
-
-def cast_single_choice_vote(choice: int, snapshot_id: str) -> None:
-    types = deepcopy(SNAPSHOT_SINGLE_CHOICE_TYPES)
-    payload = {
-        "domain": SNAPSHOT_DOMAIN,
-        "message": {
-            'from': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
-            'space': "cvx.eth",
-            'timestamp': int(time.time()),
-            'proposal': snapshot_id,
-            'choice': int(choice),
-            'metadata': json.dumps({}),
-        },
-        "primaryType": 'Vote',
-        "types": types,
-    }
-    _vote(payload)
