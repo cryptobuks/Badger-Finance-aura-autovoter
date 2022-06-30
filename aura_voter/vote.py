@@ -6,7 +6,7 @@ from rich.console import Console
 from tabulate import tabulate
 
 from aura_voter.cast_vote import FailedToVoteException
-from aura_voter.cast_vote import cast_vote
+from aura_voter.cast_vote import cast_weighed_vote
 from aura_voter.constants import BOT_USERNAME
 from aura_voter.constants import GRAVIAURA
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
@@ -90,7 +90,7 @@ def collect_and_vote(dry_run=True):
     send_code_block_to_discord(msg=table, username=BOT_USERNAME)
     if not dry_run:
         try:
-            cast_vote(snapshot_formatted_votes, snapshot['id'])
+            cast_weighed_vote(snapshot_formatted_votes, snapshot['id'])
         except (FailedToVoteException, Exception) as e:
             send_message_to_discord(f"> Voting failed with reason: {str(e)}", username=BOT_USERNAME)
         else:
