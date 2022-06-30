@@ -64,7 +64,7 @@ SNAPSHOT_DOMAIN = {
 }
 
 
-def cast_vote(votes: Dict, snapshot_id: str) -> None:
+def cast_weighed_vote(votes: Dict, snapshot_id: str) -> None:
     types = deepcopy(SNAPSHOT_TYPES)
     private_key = get_secret(
         secret_id=AURA_VOTER_SECRET_ID,
