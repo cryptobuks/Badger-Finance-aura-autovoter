@@ -100,7 +100,7 @@ def cast_single_choice_vote(choice: int, snapshot_id: str) -> None:
         "message": {
             'from': Web3.toChecksumAddress(BADGER_VOTER_ADDRESS),
             # TODO: Move back to aura once voted for bal pools
-            'space': "balancer.eths",
+            'space': "balancer.eth",
             # 'space': "aurafinance.eth",
             'timestamp': int(time.time()),
             'proposal': Web3.toBytes(hexstr=snapshot_id),
