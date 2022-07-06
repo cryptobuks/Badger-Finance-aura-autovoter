@@ -1,5 +1,6 @@
 # Used URLs
 BALANCER_GQL_URL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+HIDDEN_HAND_BRIBES_GQL_URL = "https://api.thegraph.com/subgraphs/name/badger-finance/aura-bribes"
 SNAPSHOT_VOTE_API = "https://hub.snapshot.org/api/msg"
 SNAPSHOT_GQL_API_URL = "https://hub.snapshot.org/graphql"
 
