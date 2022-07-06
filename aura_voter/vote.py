@@ -10,11 +10,14 @@ from aura_voter.cast_vote import cast_weighed_vote
 from aura_voter.constants import BOT_USERNAME
 from aura_voter.constants import GRAVIAURA
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
+from aura_voter.data_collectors.data_processors import filter_out_bribes_for_current_proposal
+from aura_voter.data_collectors.graph_collectors import get_all_aura_bribes
 from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
-from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
+from aura_voter.data_collectors.snapshot_collectors import get_snapshot_by_id
+from aura_voter.data_collectors.snapshot_collectors import get_amount_of_aura_proposals
 from aura_voter.discord import send_code_block_to_discord
 from aura_voter.discord import send_message_to_discord
 from aura_voter.utils import map_choice_id_to_pool_name
@@ -35,7 +38,10 @@ def collect_and_vote(dry_run=True):
         f"> Locked AURA amount is: {round(amount_of_locked_aura, 2)}",
         username=BOT_USERNAME
     )
-    snapshot = get_gauge_weight_snapshot()
+    snapshot = get_snapshot_by_id(
+        "0xabaf9275ae0533ce991059e8b5664225bf54bae81b9305ae60b48198db180ad9"
+    )
+    choices = map_choice_id_to_pool_name(snapshot['choices'])
     if snapshot:
         send_message_to_discord(
             f"> Fetched gauge proposal snapshot: {snapshot['id']}",
@@ -57,6 +63,14 @@ def collect_and_vote(dry_run=True):
         target_pools_with_balances.append(
             get_balancer_pool_token_balance(GRAVIAURA, pool['id'])
         )
+    # Get all aura bribes
+    bribes = get_all_aura_bribes()
+    number_of_latest_proposal = get_amount_of_aura_proposals()
+    # Filter our only the bribes that we are interested in for the given snapshot
+    if bribes:
+        filtered_bribes = filter_out_bribes_for_current_proposal(
+            bribes, choices, number_of_latest_proposal
+        )
     # TODO: Before passing pools to algorithm we have to map it to the pool names on Snapsot
     voter = POCVoter(
         Decimal(amount_of_locked_aura), target_pools_with_balances,
@@ -67,7 +81,6 @@ def collect_and_vote(dry_run=True):
         send_message_to_discord("> Nothing to vote for now", username=BOT_USERNAME)
         return
 
-    choices = map_choice_id_to_pool_name(snapshot['choices'])
     reversed_choices = reverse_choice_to_pool_name(choices)
     snapshot_formatted_votes = {reversed_choices[pool]: vote for pool, vote in votes.items()}
     console.print(snapshot_formatted_votes)

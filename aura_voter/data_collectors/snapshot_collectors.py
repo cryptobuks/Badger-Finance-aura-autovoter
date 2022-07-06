@@ -7,6 +7,7 @@ from gql import gql
 
 from aura_voter.constants import SNAPSHOT_GQL_API_URL
 from aura_voter.constants import SNAPSHOT_MIN_AMOUNT_POOLS
+from aura_voter.constants import SNAPSHOT_STATE_PENDING
 from aura_voter.data_collectors.transports import make_gql_client
 from gql.transport.requests import log
 
@@ -139,6 +140,7 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
 
 
 def get_amount_of_aura_proposals() -> Optional[int]:
+    # TODO: Find ordinal number by snapshot ID instead of always taking last proposal ID
     """
     Utility function that calculates amount of gauge weight snapshot proposals for Aura.
     This is needed for data processing of HH bribes in other places
@@ -154,7 +156,7 @@ def get_amount_of_aura_proposals() -> Optional[int]:
             break
         for proposal in result['proposals']:
             match = re.match(r"Gauge Weight for Week of .+", proposal['title'])
-            if match:
+            if match and proposal['state'] != SNAPSHOT_STATE_PENDING:
                 gauge_weight_proposal_count += 1
 
     return gauge_weight_proposal_count
