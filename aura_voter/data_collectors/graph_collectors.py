@@ -61,11 +61,7 @@ def get_all_aura_bribes() -> Optional[List[Dict]]:
     offset = 0
     bribes = []
     while True:
-        result = client.execute(
-            gql(
-                GET_BRIBES_QUERY.format(first=limit, skip=offset),
-            )
-        )
+        result = client.execute(gql(GET_BRIBES_QUERY.format(first=limit, skip=offset)))
         bribes.extend(result['bribes'])
         offset += limit
         if len(result['bribes']) < limit - 1:
