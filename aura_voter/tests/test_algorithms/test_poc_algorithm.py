@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 
 from aura_voter.constants import BADGER_WBTC_POOL_NAME
+from aura_voter.constants import AURABAL_GRAVIAURA_WETH_POOL_NAME
 from aura_voter.data_collectors import PoolBalance
 from aura_voter.voting_algorithms.poc_algorithm import POCVoter
 
@@ -41,9 +42,12 @@ def test_poc_algorithm_happy_simple_data():
 
 def test_poc_algorithm_stable_vote():
     voter = POCVoter(Decimal(1000), [])
-    assert voter.propose_voting_choices_stable() == {
-        BADGER_WBTC_POOL_NAME: Decimal(100)
+    stable_choices = voter.propose_voting_choices_stable()
+    assert stable_choices == {
+        BADGER_WBTC_POOL_NAME: Decimal(66.67),
+        AURABAL_GRAVIAURA_WETH_POOL_NAME: Decimal(33.33)
     }
+    assert sum(stable_choices.values()) == Decimal(100)
 
 
 @pytest.mark.parametrize(
