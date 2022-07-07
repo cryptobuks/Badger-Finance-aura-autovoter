@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Dict
 from typing import List
 
-from aura_voter.constants import BADGER_WBTC_POOL_NAME
+from aura_voter.constants import BADGER_WBTC_POOL_NAME, AURABAL_GRAVIAURA_WETH_POOL_NAME
 from aura_voter.data_collectors import PoolBalance
 
 
@@ -50,4 +50,7 @@ class POCVoter:
         """
         Stub method to vote 100% for ecosystem pool
         """
-        return {BADGER_WBTC_POOL_NAME: Decimal(100)}
+        return {
+            BADGER_WBTC_POOL_NAME: Decimal(66.67),
+            AURABAL_GRAVIAURA_WETH_POOL_NAME: Decimal(33.33)
+        }
