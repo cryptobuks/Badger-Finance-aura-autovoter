@@ -20,12 +20,12 @@ def test_get_gauge_weight_snapshot_happy(mocker):
         "aura_voter.data_collectors.snapshot_collectors.get_web3",
         return_value=MagicMock(eth=MagicMock(
             getBlock=MagicMock(
-                return_value={'timestamp': 1655956810}
+                return_value={'timestamp': 1657159210}
             )
         ))
     )
     result = get_gauge_weight_snapshot()
-    assert result['title'] == "Gauge Weight for Week of 23rd June 2022"
+    assert result['title'] == "Gauge Weight for Week of 7th July 2022"
     assert result['state'] == "active"
     assert result['space'] == {'id': 'aurafinance.eth', 'name': 'Aura Finance'}
 
@@ -100,7 +100,7 @@ def test_get_snapshot_by_id(mocker):
     snapshot = get_snapshot_by_id(
         "0xabaf9275ae0533ce991059e8b5664225bf54bae81b9305ae60b48198db180ad9"
     )
-    assert snapshot['title'] == 'Gauge Weight for Week of 23rd June 2022'
+    assert snapshot['title'] == 'Gauge Weight for Week of 7th July 2022'
     assert snapshot['state'] == "active"
 
 
