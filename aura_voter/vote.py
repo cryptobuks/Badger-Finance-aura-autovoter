@@ -16,7 +16,7 @@ from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
-from aura_voter.data_collectors.snapshot_collectors import get_snapshot_by_id
+from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.data_collectors.snapshot_collectors import get_amount_of_aura_proposals
 from aura_voter.discord import send_code_block_to_discord
 from aura_voter.discord import send_message_to_discord
@@ -38,9 +38,7 @@ def collect_and_vote(dry_run=True):
         f"> Locked AURA amount is: {round(amount_of_locked_aura, 2)}",
         username=BOT_USERNAME
     )
-    snapshot = get_snapshot_by_id(
-        "0xabaf9275ae0533ce991059e8b5664225bf54bae81b9305ae60b48198db180ad9"
-    )
+    snapshot = get_gauge_weight_snapshot()
     choices = map_choice_id_to_pool_name(snapshot['choices'])
     if snapshot:
         send_message_to_discord(
