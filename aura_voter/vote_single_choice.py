@@ -4,10 +4,7 @@ from aura_voter.discord import send_message_to_discord
 
 # Hardcoded params for one-time needs
 SNAPSHOT_IDS = [
-    ("0x2670c901433a452b9622268bc637bbc9a74f052717c89326c63e8a053581bea9", 1),
-    ("0x0592d89a5efea91cc463b44a4df26fe5572b06b196f1e8b70e5b66b0b83efa86", 1),
-    ("0x220eb8dc6f09ae0a89481590978fe69bdaca7d1afaf9586d51bdc9dc6fc7af18", 1),
-    ("0x113b565b39737b810cec5ef98371c437a656a07c2aed13c83d0b5e38ec5963fd", 1),
+    ("0x7acc8e26392f751c1afa41784cb803fbbb9c271a41006bac142afb71304b4d8e", 1),
 ]
 
 
