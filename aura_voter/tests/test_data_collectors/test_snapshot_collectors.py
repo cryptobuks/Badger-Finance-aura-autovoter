@@ -127,4 +127,20 @@ def test_get_amount_of_aura_proposals_happy(mocker):
             )
         )
     )
-    assert get_current_hh_proposal_round() == 1
+    # Active snapshot comes as 4 in test dataset, minus test OG dataset made by AURA team
+    assert get_current_hh_proposal_round() == 3
+
+
+def test_get_amount_of_aura_proposals_none(mocker):
+    test_data = deepcopy(PROPOSAL_TEST_DATA)
+    test_data['proposals'].pop(0)
+    mocker.patch(
+        'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
+        return_value=MagicMock(
+            execute=MagicMock(
+                side_effect=[test_data, {}],
+            )
+        )
+    )
+    # If there is no active proposal, just return None
+    assert get_current_hh_proposal_round() is None

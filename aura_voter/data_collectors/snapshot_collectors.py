@@ -142,8 +142,13 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
 
 def get_current_hh_proposal_round() -> Optional[int]:
     """
-    HH uses weird proposal counting methodology
-    TODO: upd docstring
+    Find out which index of the current proposal round is now.
+
+    HiddenHand uses following logic for calculating "proposal" field in DepositBribe event, which
+    is a bit tricky
+    - HH considers each snapshot voting round for AURA as a valid one
+    - HH adds up each snapshot round to the count
+    - HH counts snapshots from 1, not from 0
     """
     client = make_gql_client(SNAPSHOT_GQL_API_URL)
     limit = 100
