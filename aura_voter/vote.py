@@ -63,11 +63,11 @@ def collect_and_vote(dry_run=True):
         )
     # Get all aura bribes
     bribes = get_all_aura_bribes()
-    number_of_latest_proposal = get_current_hh_proposal_round()
+    current_proposal_index = get_current_hh_proposal_round()
     # Filter our only the bribes that we are interested in for the given snapshot
     if bribes:
         filtered_bribes = filter_out_bribes_for_current_proposal(
-            bribes, choices, number_of_latest_proposal
+            bribes, choices, current_proposal_index
         )
         console.print(filtered_bribes)
     # TODO: Before passing pools to algorithm we have to map it to the pool names on Snapsot
