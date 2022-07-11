@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from web3 import Web3
 
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
+from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
 from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
 from aura_voter.vote import collect_and_vote
 
@@ -21,7 +22,7 @@ def test_voter(mocker):
         'aura_voter.data_collectors.graph_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                return_value=BALANCER_POOLS_DATA,
+                side_effect=[BALANCER_POOLS_DATA, AURA_BRIBES_DATA],
             )
         )
     )
@@ -85,6 +86,6 @@ def test_voter(mocker):
             toChecksumAddress=Web3.toChecksumAddress)
     )
     collect_and_vote(dry_run=False)
-    client.return_value.execute.assert_called_once()
+    client.return_value.execute.assert_called()
     assert discord.called
     assert cast_vote.called

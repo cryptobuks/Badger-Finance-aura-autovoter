@@ -1,7 +1,7 @@
 from copy import deepcopy
 from unittest.mock import MagicMock
 
-from aura_voter.data_collectors.snapshot_collectors import get_amount_of_aura_proposals
+from aura_voter.data_collectors.snapshot_collectors import get_current_hh_proposal_round
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.data_collectors.snapshot_collectors import get_snapshot_by_id
 from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
@@ -127,18 +127,4 @@ def test_get_amount_of_aura_proposals_happy(mocker):
             )
         )
     )
-    assert get_amount_of_aura_proposals() == 1
-
-
-def test_get_amount_of_aura_proposals_empty(mocker):
-    test_data = deepcopy(PROPOSAL_TEST_DATA)
-    test_data['proposals'][0]['title'] = "Some other proposal"
-    mocker.patch(
-        'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
-        return_value=MagicMock(
-            execute=MagicMock(
-                side_effect=[test_data, {}],
-            )
-        )
-    )
-    assert get_amount_of_aura_proposals() == 0
+    assert get_current_hh_proposal_round() == 1

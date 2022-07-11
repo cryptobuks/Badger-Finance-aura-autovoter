@@ -5,9 +5,10 @@ from typing import Optional
 
 from gql import gql
 
+from aura_voter.constants import SNAPSHOT_AURA_OGTEST
 from aura_voter.constants import SNAPSHOT_GQL_API_URL
 from aura_voter.constants import SNAPSHOT_MIN_AMOUNT_POOLS
-from aura_voter.constants import SNAPSHOT_STATE_PENDING
+from aura_voter.constants import SNAPSHOT_STATE_ACTIVE
 from aura_voter.data_collectors.transports import make_gql_client
 from gql.transport.requests import log
 
@@ -139,27 +140,35 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
         return gauge_proposal
 
 
-def get_amount_of_aura_proposals() -> Optional[int]:
-    # TODO: Find ordinal number by snapshot ID instead of always taking last proposal ID
+def get_current_hh_proposal_round() -> Optional[int]:
     """
-    Utility function that calculates amount of gauge weight snapshot proposals for Aura.
-    This is needed for data processing of HH bribes in other places
+    HH uses weird proposal counting methodology
+    TODO: upd docstring
     """
     client = make_gql_client(SNAPSHOT_GQL_API_URL)
     limit = 100
     offset = 0
-    gauge_weight_proposal_count = 0
+    gauge_weight_index = None
     while True:
         result = client.execute(gql(GET_ALL_PROPOSALS_Q.format(first=limit, skip=offset)))
         offset += limit
         if not result or not result.get("proposals"):
             break
-        for proposal in result['proposals']:
+        # Filter out some test gauges that are not counted as voting rounds
+        filtered_proposals = list(filter(
+            lambda p: p['title'] != SNAPSHOT_AURA_OGTEST, result['proposals']
+        ))
+        # Sort by starting date ascending
+        sorted_proposals = sorted(
+            filtered_proposals, key=lambda item: item['start'],
+        )
+        for proposal in sorted_proposals:
             match = re.match(r"Gauge Weight for Week of .+", proposal['title'])
-            if match and proposal['state'] != SNAPSHOT_STATE_PENDING:
-                gauge_weight_proposal_count += 1
-
-    return gauge_weight_proposal_count
+            if match and proposal['state'] == SNAPSHOT_STATE_ACTIVE and proposal['title']:
+                # +1 as HH counts voting rounds from 1 not from 0
+                gauge_weight_index = sorted_proposals.index(proposal) + 1
+                break
+    return gauge_weight_index
 
 
 def get_snapshot_by_id(snapshot_id: str) -> Optional[Dict]:

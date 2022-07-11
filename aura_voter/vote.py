@@ -17,7 +17,7 @@ from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
-from aura_voter.data_collectors.snapshot_collectors import get_amount_of_aura_proposals
+from aura_voter.data_collectors.snapshot_collectors import get_current_hh_proposal_round
 from aura_voter.discord import send_code_block_to_discord
 from aura_voter.discord import send_message_to_discord
 from aura_voter.utils import map_choice_id_to_pool_name
@@ -63,12 +63,13 @@ def collect_and_vote(dry_run=True):
         )
     # Get all aura bribes
     bribes = get_all_aura_bribes()
-    number_of_latest_proposal = get_amount_of_aura_proposals()
+    number_of_latest_proposal = get_current_hh_proposal_round()
     # Filter our only the bribes that we are interested in for the given snapshot
     if bribes:
         filtered_bribes = filter_out_bribes_for_current_proposal(
             bribes, choices, number_of_latest_proposal
         )
+        console.print(filtered_bribes)
     # TODO: Before passing pools to algorithm we have to map it to the pool names on Snapsot
     voter = POCVoter(
         Decimal(amount_of_locked_aura), target_pools_with_balances,
