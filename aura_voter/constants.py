@@ -1,5 +1,6 @@
 # Used URLs
 BALANCER_GQL_URL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+HIDDEN_HAND_BRIBES_GQL_URL = "https://api.thegraph.com/subgraphs/name/badger-finance/aura-bribes"
 SNAPSHOT_VOTE_API = "https://hub.snapshot.org/api/msg"
 SNAPSHOT_GQL_API_URL = "https://hub.snapshot.org/graphql"
 
@@ -33,6 +34,8 @@ GRAVIAURA = "0xBA485b556399123261a5F9c95d413B4f93107407"
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 BOT_USERNAME = "Aura Autovoter Bot"
 SNAPSHOT_MIN_AMOUNT_POOLS = 10
+SNAPSHOT_STATE_ACTIVE = "active"
+SNAPSHOT_AURA_OGTEST = "OG test"
 
 # Aura to Snapshot pool names
 BADGER_WBTC_POOL_NAME = "80/20 BADGER/WBTC"

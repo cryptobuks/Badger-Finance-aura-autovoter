@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from web3 import Web3
 
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
+from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
 from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
 from aura_voter.vote import collect_and_vote
 
@@ -15,19 +16,23 @@ def test_voter(mocker):
         "aura_voter.vote.send_message_to_discord"
     )
     mocker.patch(
+        "aura_voter.vote.get_current_hh_proposal_round",
+        return_value=3,
+    )
+    mocker.patch(
         "aura_voter.vote.send_code_block_to_discord"
     )
     client = mocker.patch(
         'aura_voter.data_collectors.graph_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                return_value=BALANCER_POOLS_DATA,
+                side_effect=[BALANCER_POOLS_DATA, AURA_BRIBES_DATA],
             )
         )
     )
     mocker.patch(
         'aura_voter.vote.get_gauge_weight_snapshot',
-        return_value=PROPOSAL_TEST_DATA['proposals'][0]
+        return_value=PROPOSAL_TEST_DATA['proposals'][3]
     )
     cast_vote = mocker.patch('aura_voter.vote.cast_weighed_vote')
     target_token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"  # WETH for testing
@@ -85,6 +90,6 @@ def test_voter(mocker):
             toChecksumAddress=Web3.toChecksumAddress)
     )
     collect_and_vote(dry_run=False)
-    client.return_value.execute.assert_called_once()
+    client.return_value.execute.assert_called()
     assert discord.called
     assert cast_vote.called
