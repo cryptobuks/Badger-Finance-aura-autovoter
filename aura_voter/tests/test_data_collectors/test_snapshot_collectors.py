@@ -1,10 +1,13 @@
 from copy import deepcopy
 from unittest.mock import MagicMock
 
+import pytest
+
 from aura_voter.data_collectors.snapshot_collectors import get_current_hh_proposal_round
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.data_collectors.snapshot_collectors import get_snapshot_by_id
-from aura_voter.tests.test_data.test_data import PROPOSAL_TEST_DATA
+from aura_voter.tests.test_data.test_data import ALL_PROPOSAL_TEST_DATA
+from aura_voter.tests.test_data.test_data import ACTIVE_PROPOSAL_DATA
 
 
 def test_get_gauge_weight_snapshot_happy(mocker):
@@ -12,7 +15,7 @@ def test_get_gauge_weight_snapshot_happy(mocker):
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                return_value=PROPOSAL_TEST_DATA,
+                return_value=ACTIVE_PROPOSAL_DATA,
             )
         )
     )
@@ -28,27 +31,7 @@ def test_get_gauge_weight_snapshot_happy(mocker):
     assert result['title'] == "Gauge Weight for Week of 7th July 2022"
     assert result['state'] == "active"
     assert result['space'] == {'id': 'aurafinance.eth', 'name': 'Aura Finance'}
-
-
-def test_get_gauge_weight_snapshot_no_match(mocker):
-    data = PROPOSAL_TEST_DATA
-    mocker.patch(
-        'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
-        return_value=MagicMock(
-            execute=MagicMock(
-                return_value=data,
-            )
-        )
-    )
-    mocker.patch(
-        "aura_voter.data_collectors.snapshot_collectors.get_web3",
-        return_value=MagicMock(eth=MagicMock(
-            getBlock=MagicMock(
-                return_value={'timestamp': 1648684815}
-            )
-        ))
-    )
-    assert not get_gauge_weight_snapshot()
+    assert result['scores'] is not None
 
 
 def test_get_gauge_weight_snapshot_empty_res(mocker):
@@ -64,15 +47,16 @@ def test_get_gauge_weight_snapshot_empty_res(mocker):
     assert not get_gauge_weight_snapshot()
 
 
-def test_get_gauge_weight_snapshot_time_mismatch(mocker):
+@pytest.mark.parametrize('timestamp', [1648684815, 2948684815])
+def test_get_gauge_weight_snapshot_no_match(mocker, timestamp):
     """
-    Case when voting round already closed for voting, hence we should just return None
+    timestamp is way off from proposal start and end times
     """
     mocker.patch(
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                return_value=PROPOSAL_TEST_DATA,
+                return_value=ACTIVE_PROPOSAL_DATA,
             )
         )
     )
@@ -80,8 +64,29 @@ def test_get_gauge_weight_snapshot_time_mismatch(mocker):
         "aura_voter.data_collectors.snapshot_collectors.get_web3",
         return_value=MagicMock(eth=MagicMock(
             getBlock=MagicMock(
-                # Current timestamp is way in the future from the `end` of current proposal
-                return_value={'timestamp': 1649116900}
+                return_value={'timestamp': timestamp}
+            )
+        ))
+    )
+    assert not get_gauge_weight_snapshot()
+
+
+def test_get_gauge_weight_snapshot_no_active(mocker):
+    data = deepcopy(ALL_PROPOSAL_TEST_DATA)
+    data['proposals'][3]['state'] = "closed"
+    mocker.patch(
+        'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
+        return_value=MagicMock(
+            execute=MagicMock(
+                return_value=data,
+            )
+        )
+    )
+    mocker.patch(
+        "aura_voter.data_collectors.snapshot_collectors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            getBlock=MagicMock(
+                return_value={'timestamp': 1657159210}
             )
         ))
     )
@@ -93,7 +98,7 @@ def test_get_snapshot_by_id(mocker):
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                return_value=PROPOSAL_TEST_DATA,
+                return_value=ALL_PROPOSAL_TEST_DATA,
             )
         )
     )
@@ -123,7 +128,7 @@ def test_get_current_hh_proposal_round_happy(mocker):
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
             execute=MagicMock(
-                side_effect=[PROPOSAL_TEST_DATA, {}],
+                side_effect=[ALL_PROPOSAL_TEST_DATA, {}],
             )
         )
     )
@@ -132,7 +137,7 @@ def test_get_current_hh_proposal_round_happy(mocker):
 
 
 def test_get_current_hh_proposal_round_none(mocker):
-    test_data = deepcopy(PROPOSAL_TEST_DATA)
+    test_data = deepcopy(ALL_PROPOSAL_TEST_DATA)
     test_data['proposals'].pop(3)
     mocker.patch(
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
