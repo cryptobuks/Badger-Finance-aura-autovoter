@@ -32,7 +32,7 @@ def test_voter(mocker):
     )
     mocker.patch(
         'aura_voter.vote.get_gauge_weight_snapshot',
-        return_value=PROPOSAL_TEST_DATA['proposals'][0]
+        return_value=PROPOSAL_TEST_DATA['proposals'][3]
     )
     cast_vote = mocker.patch('aura_voter.vote.cast_weighed_vote')
     target_token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"  # WETH for testing

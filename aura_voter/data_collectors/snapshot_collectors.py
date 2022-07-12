@@ -57,8 +57,8 @@ query {{
       space_in: ["aurafinance.eth"],
       network_in: ["1"]
     }},
-    orderBy: "created",
-    orderDirection: desc
+    orderBy: "start",
+    orderDirection: asc
   ) {{
     id
     title
@@ -164,15 +164,11 @@ def get_current_hh_proposal_round() -> Optional[int]:
         filtered_proposals = list(filter(
             lambda p: p['title'] != SNAPSHOT_AURA_OGTEST, result['proposals']
         ))
-        # Sort by starting date ascending
-        sorted_proposals = sorted(
-            filtered_proposals, key=lambda item: item['start'],
-        )
-        for proposal in sorted_proposals:
+        for proposal in filtered_proposals:
             match = re.match(r"Gauge Weight for Week of .+", proposal['title'])
             if match and proposal['state'] == SNAPSHOT_STATE_ACTIVE and proposal['title']:
                 # +1 as HH counts voting rounds from 1 not from 0
-                gauge_weight_index = sorted_proposals.index(proposal) + 1
+                gauge_weight_index = filtered_proposals.index(proposal) + 1
                 break
     return gauge_weight_index
 
@@ -185,4 +181,8 @@ def get_snapshot_by_id(snapshot_id: str) -> Optional[Dict]:
     result = client.execute(GET_SINGLE_PROPOSAL_Q(snapshot_id))
     if not result or not result.get("proposals"):
         return
-    return result['proposals'][0]
+    target_snapshot = None
+    for proposal in result['proposals']:
+        if proposal['id'] == snapshot_id:
+            target_snapshot = proposal
+    return target_snapshot

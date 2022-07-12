@@ -100,8 +100,8 @@ def test_get_snapshot_by_id(mocker):
     snapshot = get_snapshot_by_id(
         "0xabaf9275ae0533ce991059e8b5664225bf54bae81b9305ae60b48198db180ad9"
     )
-    assert snapshot['title'] == 'Gauge Weight for Week of 7th July 2022'
-    assert snapshot['state'] == "active"
+    assert snapshot['title'] == 'Gauge Weight for Week of 23rd June 2022'
+    assert snapshot['state'] == "closed"
 
 
 def test_get_snapshot_by_id_empty_res(mocker):
@@ -118,7 +118,7 @@ def test_get_snapshot_by_id_empty_res(mocker):
     )
 
 
-def test_get_amount_of_aura_proposals_happy(mocker):
+def test_get_current_hh_proposal_round_happy(mocker):
     mocker.patch(
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
@@ -131,9 +131,9 @@ def test_get_amount_of_aura_proposals_happy(mocker):
     assert get_current_hh_proposal_round() == 3
 
 
-def test_get_amount_of_aura_proposals_none(mocker):
+def test_get_current_hh_proposal_round_none(mocker):
     test_data = deepcopy(PROPOSAL_TEST_DATA)
-    test_data['proposals'].pop(0)
+    test_data['proposals'].pop(3)
     mocker.patch(
         'aura_voter.data_collectors.snapshot_collectors.make_gql_client',
         return_value=MagicMock(
