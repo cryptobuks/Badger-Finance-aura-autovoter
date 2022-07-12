@@ -122,6 +122,7 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
     offset = 0
     while True:
         result = client.execute(gql(GET_ACTIVE_PROPOSALS_Q.format(first=limit, skip=offset)))
+        offset += limit
         if not result or not result.get("proposals"):
             break
         gauge_proposal = None
