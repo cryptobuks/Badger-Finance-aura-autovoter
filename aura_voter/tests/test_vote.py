@@ -16,6 +16,10 @@ def test_voter(mocker):
         "aura_voter.vote.send_message_to_discord"
     )
     mocker.patch(
+        "aura_voter.vote.get_current_hh_proposal_round",
+        return_value=3,
+    )
+    mocker.patch(
         "aura_voter.vote.send_code_block_to_discord"
     )
     client = mocker.patch(

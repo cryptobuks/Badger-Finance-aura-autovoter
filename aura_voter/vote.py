@@ -65,7 +65,7 @@ def collect_and_vote(dry_run=True):
     bribes = get_all_aura_bribes()
     current_proposal_index = get_current_hh_proposal_round()
     # Filter our only the bribes that we are interested in for the given snapshot
-    if bribes:
+    if bribes and current_proposal_index:
         filtered_bribes = filter_out_bribes_for_current_proposal(
             bribes, choices, current_proposal_index
         )
