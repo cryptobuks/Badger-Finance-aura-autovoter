@@ -1,13 +1,16 @@
 import json
 import os
 from collections.abc import Mapping
+from decimal import Decimal
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union
-from eth_account._utils.structured_data.validation import validate_structured_data  # noqa
+
 from eth_account._utils.structured_data.hashing import hash_domain  # noqa
 from eth_account._utils.structured_data.hashing import hash_message as hash_eip712_message  # noqa
 from eth_account._utils.structured_data.hashing import load_and_validate_structured_message  # noqa
+from eth_account._utils.structured_data.validation import validate_structured_data  # noqa
 from eth_account.messages import SignableMessage
 from eth_utils.curried import to_text
 from hexbytes import HexBytes
@@ -69,6 +72,19 @@ def map_choice_id_to_pool_name(choices: List) -> Dict:
     for index, choice in enumerate(choices):
         snapshot_map[str(index + 1)] = choice
     return snapshot_map
+
+
+def extract_pools_voting_power(choices: List, scores: List) -> Optional[Dict[str, Decimal]]:
+    """
+    Extract voting power for each pool in snapshot
+    """
+    pool_voting_results = {}
+    if not choices or not scores:
+        return
+    for index, choice in enumerate(choices):
+        pool_voting_results[choice] = Decimal(scores[index])
+
+    return pool_voting_results
 
 
 reverse_choice_to_pool_name = lambda choices: {v: k for k, v in choices.items()}

@@ -1,9 +1,11 @@
 import time
+from decimal import Decimal
 from unittest.mock import MagicMock
 
 import pytest
 
 from aura_voter.tests.test_data.test_data import ALL_PROPOSAL_TEST_DATA
+from aura_voter.utils import extract_pools_voting_power
 from aura_voter.utils import get_abi
 from aura_voter.utils import map_choice_id_to_pool_name
 from aura_voter.utils import reverse_choice_to_pool_name
@@ -89,3 +91,10 @@ def test_reverse_choice_to_pool_name():
 
 def test_test_map_choice_id_to_pool_name_empty():
     assert map_choice_id_to_pool_name([]) == {}
+
+
+def test_extract_pools_voting_power():
+    latest_snapshot = ALL_PROPOSAL_TEST_DATA['proposals'][3]
+    pools = extract_pools_voting_power(latest_snapshot['choices'], latest_snapshot['scores'])
+    assert len(pools) == len(latest_snapshot['scores'])
+    assert pools['80/20 BADGER/WBTC'] == pytest.approx(Decimal(237547.358))

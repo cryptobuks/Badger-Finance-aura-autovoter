@@ -110,3 +110,7 @@ def calculate_dollar_value_of_bribes_per_pool(
             else:
                 pool_bribe_totals[pool]['tokens'] = {token_symbol}
     return pool_bribe_totals
+
+
+def calculate_dollar_vlaura_values():
+    pass
