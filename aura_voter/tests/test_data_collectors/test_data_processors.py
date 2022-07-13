@@ -1,5 +1,8 @@
+from unittest.mock import MagicMock
+
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
 from aura_voter.data_collectors.data_processors import filter_out_bribes_for_current_proposal
+from aura_voter.data_collectors.data_processors import get_bribes_tokens_prices
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
 from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
 
@@ -36,6 +39,55 @@ TEST_CHOICES = {'1': 'veBAL', '2': '50/50 AURA/WETH', '3': 'Stable auraBAL/B-80B
                 '77': 'p-80/20 VISION/WETH', '78': 'p-80/20 THX/USDC',
                 '79': 'p-60/20/20 TEL/USDC/BAL', '80': 'p-25/25/25/25 LINK/WETH/BAL/AAVE',
                 '81': 'p-MetaStable WMATIC/MaticX', '82': 'p-40/40/20 TEL/DFX/USDC'}
+
+EXPECTED_FILTERED_BRIBES = {
+    'p-25/25/25/25 WMATIC/USDC/WETH/BAL': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '1672000000'}],
+    '50/50 AURA/WETH': [
+        {'token': '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b',
+         'amount': '10000000000000000000'},
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+         'amount': '1000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '100000000000000000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '1000000000000000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '3000000000000000000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '10000000000000000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '284000000000000000000'},
+        {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
+         'amount': '5000000000000000000000'}],
+    'p-MetaStable WMATIC/stMATIC': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+         'amount': '2227000000'}],
+    'p-MetaStable WMATIC/MaticX': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '50000000'},
+        {'token': '0x30d20208d987713f46dfd34ef128bb16c404d10f',
+         'amount': '11200000000000000000000'},
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '3540000000'},
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '9950000000'}],
+    'MetaStable wstETH/WETH': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+         'amount': '10860000000'}],
+    'Stable FIAT/DAI/USDC': [
+        {'token': '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
+         'amount': '100000000000000000000000'}],
+    'p-33/33/33 WBTC/USDC/WETH': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '717000000'}],
+    '80/20 FDT/WETH': [
+        {'token': '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
+         'amount': '100000000000000000000000'}],
+    '50/50 DFX/WETH': [
+        {'token': '0x888888435fde8e7d4c54cab67f206e4199454c60',
+         'amount': '10720000000000000000000'}],
+    'a-33/33/33 WBTC/WETH/USDC': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '3505000000'}],
+    'MetaStable rETH/WETH': [
+        {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+         'amount': '1341000000'}]}
 
 TEST_PROPOSAL_HH_INDEX = 3
 
@@ -83,54 +135,7 @@ def test_filter_out_bribes_for_current_proposal_happy():
         AURA_BRIBES_DATA['bribes'],
         TEST_CHOICES, current_proposal_index=TEST_PROPOSAL_HH_INDEX
     )
-    assert dict(bribes) == {
-        'p-25/25/25/25 WMATIC/USDC/WETH/BAL': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '1672000000'}],
-        '50/50 AURA/WETH': [
-            {'token': '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b',
-             'amount': '10000000000000000000'},
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-             'amount': '1000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '100000000000000000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '1000000000000000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '3000000000000000000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '10000000000000000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '284000000000000000000'},
-            {'token': '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf',
-             'amount': '5000000000000000000000'}],
-        'p-MetaStable WMATIC/stMATIC': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-             'amount': '2227000000'}],
-        'p-MetaStable WMATIC/MaticX': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '50000000'},
-            {'token': '0x30d20208d987713f46dfd34ef128bb16c404d10f',
-             'amount': '11200000000000000000000'},
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '3540000000'},
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '9950000000'}],
-        'MetaStable wstETH/WETH': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-             'amount': '10860000000'}],
-        'Stable FIAT/DAI/USDC': [
-            {'token': '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
-             'amount': '100000000000000000000000'}],
-        'p-33/33/33 WBTC/USDC/WETH': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '717000000'}],
-        '80/20 FDT/WETH': [
-            {'token': '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
-             'amount': '100000000000000000000000'}],
-        '50/50 DFX/WETH': [
-            {'token': '0x888888435fde8e7d4c54cab67f206e4199454c60',
-             'amount': '10720000000000000000000'}],
-        'a-33/33/33 WBTC/WETH/USDC': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'amount': '3505000000'}],
-        'MetaStable rETH/WETH': [
-            {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-             'amount': '1341000000'}]}
+    assert dict(bribes) == EXPECTED_FILTERED_BRIBES
 
 
 def test_filter_out_bribes_for_current_proposal_empty():
@@ -140,3 +145,39 @@ def test_filter_out_bribes_for_current_proposal_empty():
     assert dict(filter_out_bribes_for_current_proposal(
         AURA_BRIBES_DATA['bribes'], TEST_CHOICES, current_proposal_index=135
     )) == {}
+
+
+def test_get_bribes_tokens_prices(mocker):
+    """
+    Checking that prices for all bribe tokens are returned
+    """
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.CoinGeckoAPI",
+        return_value=MagicMock(get_token_price=MagicMock(
+            # Returning some fixed prices as of 13 July 2022
+            return_value={'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {'usd': 1.001},
+                          '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b': {'usd': 5.54},
+                          '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf': {'usd': 2.39},
+                          '0x888888435fde8e7d4c54cab67f206e4199454c60': {'usd': 0.499231},
+                          '0x30d20208d987713f46dfd34ef128bb16c404d10f': {'usd': 0.430622},
+                          '0xed1480d12be41d92f36f5f7bdd88212e381a3677': {'usd': 0.01368017}}))
+    )
+    prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
+    for _, bribes in EXPECTED_FILTERED_BRIBES.items():
+        for bribe in bribes:
+            # Make sure that each token is priced
+            assert bribe['token'] in prices
+
+
+def test_get_bribes_tokens_prices_empty(mocker):
+    """
+    Case when some weird token is bribed without price on CG
+    """
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.CoinGeckoAPI",
+        return_value=MagicMock(get_token_price=MagicMock(
+            return_value={}
+        ))
+    )
+    prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
+    assert prices == {}
