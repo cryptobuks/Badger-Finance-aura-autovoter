@@ -28,7 +28,14 @@ console = Console(width=100000, height=10000)
 
 
 def collect_and_vote(dry_run=True):
-    # TODO: Add this when bveAURA launches
+    snapshot = get_gauge_weight_snapshot()
+    if not snapshot:
+        send_message_to_discord("> No active proposal found", username=BOT_USERNAME)
+        return
+    send_message_to_discord(
+        f"> Fetched gauge proposal snapshot: {snapshot['id']}",
+        username=BOT_USERNAME,
+    )
     amount_of_locked_aura = get_locked_graviaura_amount()
     send_message_to_discord(
         "🗳️🗳️🗳️🗳️ New voting round AURA 🗳️🗳️🗳️🗳️",
@@ -38,16 +45,7 @@ def collect_and_vote(dry_run=True):
         f"> Locked AURA amount is: {round(amount_of_locked_aura, 2)}",
         username=BOT_USERNAME
     )
-    snapshot = get_gauge_weight_snapshot()
     choices = map_choice_id_to_pool_name(snapshot['choices'])
-    if snapshot:
-        send_message_to_discord(
-            f"> Fetched gauge proposal snapshot: {snapshot['id']}",
-            username=BOT_USERNAME,
-        )
-    else:
-        send_message_to_discord("> No active proposal found", username=BOT_USERNAME)
-        return
     all_balancer_pools = get_all_balancer_pools()  # type: List[Dict]
     # Extract only pools that have target token
     target_pools = extract_pools_with_target_token_included(

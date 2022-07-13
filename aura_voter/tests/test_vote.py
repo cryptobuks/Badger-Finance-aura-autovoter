@@ -4,7 +4,7 @@ from web3 import Web3
 
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
 from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
-from aura_voter.tests.test_data.test_data import ALL_PROPOSAL_TEST_DATA
+from aura_voter.tests.test_data.test_data import ACTIVE_PROPOSAL_DATA
 from aura_voter.vote import collect_and_vote
 
 
@@ -32,7 +32,7 @@ def test_voter(mocker):
     )
     mocker.patch(
         'aura_voter.vote.get_gauge_weight_snapshot',
-        return_value=ALL_PROPOSAL_TEST_DATA['proposals'][3]
+        return_value=ACTIVE_PROPOSAL_DATA['proposals'][0]
     )
     cast_vote = mocker.patch('aura_voter.vote.cast_weighed_vote')
     target_token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"  # WETH for testing
