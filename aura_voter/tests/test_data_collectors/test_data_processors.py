@@ -1,5 +1,7 @@
+from decimal import Decimal
 from unittest.mock import MagicMock
 
+from aura_voter.data_collectors.data_processors import calculate_dollar_value_of_bribes_per_pool
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
 from aura_voter.data_collectors.data_processors import filter_out_bribes_for_current_proposal
 from aura_voter.data_collectors.data_processors import get_bribes_tokens_prices
@@ -89,6 +91,13 @@ EXPECTED_FILTERED_BRIBES = {
         {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
          'amount': '1341000000'}]}
 
+STALE_TOKEN_PRICES = {'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {'usd': 1.001},
+                      '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b': {'usd': 5.54},
+                      '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf': {'usd': 2.39},
+                      '0x888888435fde8e7d4c54cab67f206e4199454c60': {'usd': 0.499231},
+                      '0x30d20208d987713f46dfd34ef128bb16c404d10f': {'usd': 0.430622},
+                      '0xed1480d12be41d92f36f5f7bdd88212e381a3677': {'usd': 0.01368017}}
+
 TEST_PROPOSAL_HH_INDEX = 3
 
 
@@ -155,12 +164,8 @@ def test_get_bribes_tokens_prices(mocker):
         "aura_voter.data_collectors.data_processors.CoinGeckoAPI",
         return_value=MagicMock(get_token_price=MagicMock(
             # Returning some fixed prices as of 13 July 2022
-            return_value={'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {'usd': 1.001},
-                          '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b': {'usd': 5.54},
-                          '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf': {'usd': 2.39},
-                          '0x888888435fde8e7d4c54cab67f206e4199454c60': {'usd': 0.499231},
-                          '0x30d20208d987713f46dfd34ef128bb16c404d10f': {'usd': 0.430622},
-                          '0xed1480d12be41d92f36f5f7bdd88212e381a3677': {'usd': 0.01368017}}))
+            return_value=STALE_TOKEN_PRICES)
+        )
     )
     prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
     for _, bribes in EXPECTED_FILTERED_BRIBES.items():
@@ -181,3 +186,54 @@ def test_get_bribes_tokens_prices_empty(mocker):
     )
     prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
     assert prices == {}
+
+
+def test_calculate_dollar_value_of_bribes_per_pool(mocker):
+    """
+    Checking cumulative amount of bribes in $ per pool
+    """
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            contract=MagicMock(
+                return_value=MagicMock(
+                    functions=MagicMock(
+                        decimals=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=6)
+                        )),
+                        symbol=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value="TEST")
+                        )),
+                    )
+                )
+            )
+        ))
+    )
+    pool_bribes = calculate_dollar_value_of_bribes_per_pool(
+        bribes_filtered=EXPECTED_FILTERED_BRIBES,
+        token_prices={
+            '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': Decimal('1.00099'),
+            '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b': Decimal('5.54000'),
+            '0xc0c293ce456ff0ed870add98a0828dd4d2903dbf': Decimal('2.39000'),
+            '0x888888435fde8e7d4c54cab67f206e4199454c60': Decimal('0.49923'),
+            '0x30d20208d987713f46dfd34ef128bb16c404d10f': Decimal('0.43062'),
+            '0xed1480d12be41d92f36f5f7bdd88212e381a3677': Decimal('0.01368')
+        },
+    )
+    assert dict(pool_bribes) == {
+        'p-25/25/25/25 WMATIC/USDC/WETH/BAL': {'totals': Decimal('1673.65528'), 'tokens': {'TEST'}},
+        '50/50 AURA/WETH': {'totals': Decimal('20119450000000001.00099'), 'tokens': {'TEST'}},
+        'p-MetaStable WMATIC/stMATIC': {'totals': Decimal('2229.20473'), 'tokens': {'TEST'}},
+        'p-MetaStable WMATIC/MaticX': {'totals': Decimal('4822944000013553.40460'),
+                                       'tokens': {'TEST'}},
+        'MetaStable wstETH/WETH': {'totals': Decimal('10870.75140'), 'tokens': {'TEST'}},
+        'Stable FIAT/DAI/USDC': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
+        'p-33/33/33 WBTC/USDC/WETH': {'totals': Decimal('717.70983'), 'tokens': {'TEST'}},
+        '80/20 FDT/WETH': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
+        '50/50 DFX/WETH': {'totals': Decimal('5351745600000000.00000'), 'tokens': {'TEST'}},
+        'a-33/33/33 WBTC/WETH/USDC': {'totals': Decimal('3508.46995'), 'tokens': {'TEST'}},
+        'MetaStable rETH/WETH': {'totals': Decimal('1342.32759'), 'tokens': {'TEST'}}}
+
+
+def test_calculate_dollar_value_of_bribes_per_pool_no_bribes():
+    assert not calculate_dollar_value_of_bribes_per_pool({}, {})

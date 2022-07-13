@@ -8,6 +8,8 @@ from pycoingecko import CoinGeckoAPI
 from web3 import Web3
 
 from aura_voter.constants import CURRENCY_USD
+from aura_voter.utils import get_abi
+from aura_voter.web3 import get_web3
 
 CG_CHAIN_ID = "ethereum"
 
@@ -29,12 +31,16 @@ def extract_pools_with_target_token_included(
 
 
 def filter_out_bribes_for_current_proposal(
-        bribes: List[Dict], choices: Dict, current_proposal_index: int) -> Dict[str, List[Dict]]:
+        bribes: List[Dict], choices: Dict, current_proposal_index: int) -> Optional[
+    Dict[str, List[Dict]]
+]:
     """
     Processing raw bribes from theGraph and mapping them to the voting choices from Snapshot
     - param: amount_of_gauge_proposals represents latest Snapshot Gauge voting round that HH guys
     set manually for each bribe round
     """
+    if not bribes:
+        return
     bribes_filtered = defaultdict(list)
     for bribe in bribes:
         for choice_number, pool_name in choices.items():
@@ -71,3 +77,36 @@ def get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optional
     return {
         token_addr: Decimal(price_data['usd']) for token_addr, price_data in token_prices.items()
     }
+
+
+def calculate_dollar_value_of_bribes_per_pool(
+        bribes_filtered: Dict[str, List[Dict]], token_prices: Dict[str, Decimal],
+) -> Optional[Dict[str, Dict]]:
+    """
+    Function that calculates total amount of bribes in $ per pool.
+    For each pool it returns a dict that contains total amount of bribes in $ and tokens bribed
+    """
+    if not bribes_filtered or not token_prices:
+        return
+    web3 = get_web3()
+    pool_bribe_totals = defaultdict(dict)
+    for pool, bribes in bribes_filtered.items():
+        for bribe in bribes:
+            token_contract = web3.eth.contract(
+                address=web3.toChecksumAddress(
+                    web3.toChecksumAddress(bribe['token'])), abi=get_abi("ERC20")
+            )
+            token_amount = (
+                Decimal(bribe['amount']) / 10 ** token_contract.functions.decimals().call()
+            )
+            bribe_value_in_usd = token_amount * token_prices[bribe['token']]
+            if pool_bribe_totals[pool].get('totals'):
+                pool_bribe_totals[pool]['totals'] += bribe_value_in_usd
+            else:
+                pool_bribe_totals[pool]['totals'] = bribe_value_in_usd
+            token_symbol = token_contract.functions.symbol().call()
+            if pool_bribe_totals[pool].get('tokens'):
+                pool_bribe_totals[pool]['tokens'].add(token_symbol)
+            else:
+                pool_bribe_totals[pool]['tokens'] = {token_symbol}
+    return pool_bribe_totals
