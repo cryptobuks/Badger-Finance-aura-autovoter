@@ -100,6 +100,7 @@ query {{
     end
     snapshot
     choices
+    scores
     network
     state
     author
