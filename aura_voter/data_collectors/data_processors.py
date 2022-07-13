@@ -41,7 +41,7 @@ def _filter_out_bribes_for_current_proposal(
     - param: amount_of_gauge_proposals represents latest Snapshot Gauge voting round that HH guys
     set manually for each bribe round
     """
-    if not bribes:
+    if not all([bribes, choices, current_proposal_index]):
         return
     bribes_filtered = defaultdict(list)
     for bribe in bribes:
@@ -140,8 +140,10 @@ def get_bribes(
     Main pipeline function that goes through all functions from above and calculates totals, tokens,
     bribes usd prices and $/vlAURA
     """
-    snapshot_choices = snapshot['choices']
-    snapshot_scores = snapshot['scores']
+    snapshot_choices = snapshot.get('choices')
+    snapshot_scores = snapshot.get('scores')
+    if not all([snapshot_scores, snapshot_choices, bribes, current_proposal_index]):
+        return
     # First, filter out bribes for current proposal
     filtered_bribes = _filter_out_bribes_for_current_proposal(
         bribes, snapshot_choices, current_proposal_index

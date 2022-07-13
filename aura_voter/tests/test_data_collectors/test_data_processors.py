@@ -1,15 +1,17 @@
 from decimal import Decimal
 from unittest.mock import MagicMock
 
-from aura_voter.data_collectors.data_processors import _calculate_dollar_value_of_bribes_per_pool  # noqa
+from aura_voter.data_collectors.data_processors import \
+    _calculate_dollar_value_of_bribes_per_pool  # noqa
 from aura_voter.data_collectors.data_processors import _calculate_dollar_vlaura_values  # noqa
-from aura_voter.data_collectors.data_processors import _filter_out_bribes_for_current_proposal  # noqa
+from aura_voter.data_collectors.data_processors import \
+    _filter_out_bribes_for_current_proposal  # noqa
 from aura_voter.data_collectors.data_processors import _get_bribes_tokens_prices  # noqa
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
+from aura_voter.data_collectors.data_processors import get_bribes
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
 from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
 from aura_voter.tests.test_data.test_data import ACTIVE_PROPOSAL_DATA
-
 
 EXPECTED_FILTERED_BRIBES = {
     'p-25/25/25/25 WMATIC/USDC/WETH/BAL': [
@@ -231,4 +233,65 @@ def test_calculate_dollar_vlaura_values_empty():
         total_bribes_per_pool=EXPECTED_POOL_TOTALS_IN_DOLLAR,
         choices=ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
         scores=[]
+    )
+
+
+def test_pipeline_happy(mocker):
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            contract=MagicMock(
+                return_value=MagicMock(
+                    functions=MagicMock(
+                        decimals=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=6)
+                        )),
+                        symbol=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value="TEST")
+                        )),
+                    )
+                )
+            )
+        ))
+    )
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.CoinGeckoAPI",
+        return_value=MagicMock(get_token_price=MagicMock(
+            # Returning some fixed prices as of 13 July 2022
+            return_value=STALE_TOKEN_PRICES)
+        )
+    )
+    bribs = get_bribes(
+        ACTIVE_PROPOSAL_DATA['proposals'][0],
+        AURA_BRIBES_DATA['bribes'],
+        current_proposal_index=3,
+    )
+    assert bribs['p-MetaStable WMATIC/stMATIC'] == {
+        'tokens': {'TEST'},
+        'totals_in_$': Decimal('2229.226999999999754731305757'),
+        '$/vlAURA': Decimal('0.05942120094572037319334685748')
+    }
+
+
+def test_pipeline_no_choices():
+    assert not get_bribes(
+        ACTIVE_PROPOSAL_DATA['proposals'][0],
+        [],
+        current_proposal_index=3,
+    )
+
+
+def test_pipeline_no_bribes():
+    assert not get_bribes(
+        {},
+        AURA_BRIBES_DATA['bribes'],
+        current_proposal_index=3,
+    )
+
+
+def test_pipeline_invalid_index():
+    assert not get_bribes(
+        ACTIVE_PROPOSAL_DATA['proposals'][0],
+        AURA_BRIBES_DATA['bribes'],
+        current_proposal_index=150,
     )
