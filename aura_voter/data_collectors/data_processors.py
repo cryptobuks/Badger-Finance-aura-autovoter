@@ -8,6 +8,7 @@ from pycoingecko import CoinGeckoAPI
 from web3 import Web3
 
 from aura_voter.constants import CURRENCY_USD
+from aura_voter.utils import extract_pools_voting_power
 from aura_voter.utils import get_abi
 from aura_voter.web3 import get_web3
 
@@ -112,5 +113,20 @@ def calculate_dollar_value_of_bribes_per_pool(
     return pool_bribe_totals
 
 
-def calculate_dollar_vlaura_values():
-    pass
+def calculate_dollar_vlaura_values(
+        total_bribes_per_pool: Dict[str, Dict], choices: List[str], scores: List[str],
+) -> Optional[Dict[str, Dict]]:
+    """
+    Final function in the pipeline that calculated $/vlAURA mostly
+    """
+    if not all([total_bribes_per_pool, choices, scores]):
+        return
+    pools_voting_power = extract_pools_voting_power(choices, scores)
+    pool_final_bribes_info = {}
+    for pool, bribes_info in total_bribes_per_pool.items():
+        pool_final_bribes_info[pool] = {
+            'tokens': bribes_info['tokens'],
+            'totals_in_$': bribes_info['totals'],
+            '$/vlAURA': bribes_info['totals'] / pools_voting_power[pool]
+        }
+    return pool_final_bribes_info

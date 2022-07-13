@@ -2,6 +2,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 from aura_voter.data_collectors.data_processors import calculate_dollar_value_of_bribes_per_pool
+from aura_voter.data_collectors.data_processors import calculate_dollar_vlaura_values
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
 from aura_voter.data_collectors.data_processors import filter_out_bribes_for_current_proposal
 from aura_voter.data_collectors.data_processors import get_bribes_tokens_prices
@@ -9,6 +10,8 @@ from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
 from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
 
 # Test choices for snapshot round 0x515649bddfb0e0d637745e8654616b03b371bb444f90f327064e7eee6052aff8
+from aura_voter.tests.test_data.test_data import ACTIVE_PROPOSAL_DATA
+
 TEST_CHOICES = {'1': 'veBAL', '2': '50/50 AURA/WETH', '3': 'Stable auraBAL/B-80BAL-20WETH',
                 '4': 'Stable DAI/USDC/USDT', '5': '50/50 SNX/WETH', '6': '60/40 WETH/DAI',
                 '7': '50/50 YFI/WETH', '8': 'MetaStable rETH/WETH', '9': '80/20 D2D/USDC',
@@ -90,6 +93,20 @@ EXPECTED_FILTERED_BRIBES = {
     'MetaStable rETH/WETH': [
         {'token': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
          'amount': '1341000000'}]}
+
+EXPECTED_POOL_TOTALS_IN_DOLLAR = {
+    'p-25/25/25/25 WMATIC/USDC/WETH/BAL': {'totals': Decimal('1673.65528'), 'tokens': {'TEST'}},
+    '50/50 AURA/WETH': {'totals': Decimal('20119450000000001.00099'), 'tokens': {'TEST'}},
+    'p-MetaStable WMATIC/stMATIC': {'totals': Decimal('2229.20473'), 'tokens': {'TEST'}},
+    'p-MetaStable WMATIC/MaticX': {'totals': Decimal('4822944000013553.40460'),
+                                   'tokens': {'TEST'}},
+    'MetaStable wstETH/WETH': {'totals': Decimal('10870.75140'), 'tokens': {'TEST'}},
+    'Stable FIAT/DAI/USDC': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
+    'p-33/33/33 WBTC/USDC/WETH': {'totals': Decimal('717.70983'), 'tokens': {'TEST'}},
+    '80/20 FDT/WETH': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
+    '50/50 DFX/WETH': {'totals': Decimal('5351745600000000.00000'), 'tokens': {'TEST'}},
+    'a-33/33/33 WBTC/WETH/USDC': {'totals': Decimal('3508.46995'), 'tokens': {'TEST'}},
+    'MetaStable rETH/WETH': {'totals': Decimal('1342.32759'), 'tokens': {'TEST'}}}
 
 STALE_TOKEN_PRICES = {'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {'usd': 1.001},
                       '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b': {'usd': 5.54},
@@ -220,20 +237,30 @@ def test_calculate_dollar_value_of_bribes_per_pool(mocker):
             '0xed1480d12be41d92f36f5f7bdd88212e381a3677': Decimal('0.01368')
         },
     )
-    assert dict(pool_bribes) == {
-        'p-25/25/25/25 WMATIC/USDC/WETH/BAL': {'totals': Decimal('1673.65528'), 'tokens': {'TEST'}},
-        '50/50 AURA/WETH': {'totals': Decimal('20119450000000001.00099'), 'tokens': {'TEST'}},
-        'p-MetaStable WMATIC/stMATIC': {'totals': Decimal('2229.20473'), 'tokens': {'TEST'}},
-        'p-MetaStable WMATIC/MaticX': {'totals': Decimal('4822944000013553.40460'),
-                                       'tokens': {'TEST'}},
-        'MetaStable wstETH/WETH': {'totals': Decimal('10870.75140'), 'tokens': {'TEST'}},
-        'Stable FIAT/DAI/USDC': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
-        'p-33/33/33 WBTC/USDC/WETH': {'totals': Decimal('717.70983'), 'tokens': {'TEST'}},
-        '80/20 FDT/WETH': {'totals': Decimal('1368000000000000.00000'), 'tokens': {'TEST'}},
-        '50/50 DFX/WETH': {'totals': Decimal('5351745600000000.00000'), 'tokens': {'TEST'}},
-        'a-33/33/33 WBTC/WETH/USDC': {'totals': Decimal('3508.46995'), 'tokens': {'TEST'}},
-        'MetaStable rETH/WETH': {'totals': Decimal('1342.32759'), 'tokens': {'TEST'}}}
+    assert dict(pool_bribes) == EXPECTED_POOL_TOTALS_IN_DOLLAR
 
 
 def test_calculate_dollar_value_of_bribes_per_pool_no_bribes():
     assert not calculate_dollar_value_of_bribes_per_pool({}, {})
+
+
+def test_calculate_dollar_vlaura_values():
+    final_pool_info = calculate_dollar_vlaura_values(
+        total_bribes_per_pool=EXPECTED_POOL_TOTALS_IN_DOLLAR,
+        choices=ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
+        scores=ACTIVE_PROPOSAL_DATA['proposals'][0]['scores']
+    )
+    # Cherrypick one of the pools to check if data is correct
+    assert final_pool_info['p-33/33/33 WBTC/USDC/WETH'] == {
+        'tokens': {'TEST'},
+        'totals_in_$': Decimal('717.70983'),
+        '$/vlAURA': Decimal('0.05301878113117229370856000411')
+    }
+
+
+def test_calculate_dollar_vlaura_values_empty():
+    assert not calculate_dollar_vlaura_values(
+        total_bribes_per_pool=EXPECTED_POOL_TOTALS_IN_DOLLAR,
+        choices=ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
+        scores=[]
+    )
