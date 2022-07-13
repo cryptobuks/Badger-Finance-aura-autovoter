@@ -89,6 +89,29 @@ def test_voter(mocker):
             ),
             toChecksumAddress=Web3.toChecksumAddress)
     )
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.CoinGeckoAPI",
+        return_value=MagicMock(get_token_price=MagicMock(
+            return_value={}
+        ))
+    )
+    mocker.patch(
+        "aura_voter.data_collectors.data_processors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            contract=MagicMock(
+                return_value=MagicMock(
+                    functions=MagicMock(
+                        decimals=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=6)
+                        )),
+                        symbol=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value="TEST")
+                        )),
+                    )
+                )
+            )
+        ))
+    )
     collect_and_vote(dry_run=False)
     client.return_value.execute.assert_called()
     assert discord.called

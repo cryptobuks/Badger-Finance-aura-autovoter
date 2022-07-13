@@ -10,6 +10,7 @@ from web3 import Web3
 from aura_voter.constants import CURRENCY_USD
 from aura_voter.utils import extract_pools_voting_power
 from aura_voter.utils import get_abi
+from aura_voter.utils import map_choice_id_to_pool_name
 from aura_voter.web3 import get_web3
 
 CG_CHAIN_ID = "ethereum"
@@ -31,8 +32,8 @@ def extract_pools_with_target_token_included(
     return target_pools
 
 
-def filter_out_bribes_for_current_proposal(
-        bribes: List[Dict], choices: Dict, current_proposal_index: int) -> Optional[
+def _filter_out_bribes_for_current_proposal(
+        bribes: List[Dict], choices: List[str], current_proposal_index: int) -> Optional[
     Dict[str, List[Dict]]
 ]:
     """
@@ -44,7 +45,7 @@ def filter_out_bribes_for_current_proposal(
         return
     bribes_filtered = defaultdict(list)
     for bribe in bribes:
-        for choice_number, pool_name in choices.items():
+        for choice_number, pool_name in map_choice_id_to_pool_name(choices).items():
             # Bribe proposal from subgraph is keccak hash from the voting choice number(BAL pool)
             # and snapshot ordinal number
             if Web3.solidityKeccak(
@@ -56,7 +57,7 @@ def filter_out_bribes_for_current_proposal(
     return bribes_filtered
 
 
-def get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optional[
+def _get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optional[
     Dict[str, Decimal]
 ]:
     """
@@ -80,7 +81,7 @@ def get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optional
     }
 
 
-def calculate_dollar_value_of_bribes_per_pool(
+def _calculate_dollar_value_of_bribes_per_pool(
         bribes_filtered: Dict[str, List[Dict]], token_prices: Dict[str, Decimal],
 ) -> Optional[Dict[str, Dict]]:
     """
@@ -113,7 +114,7 @@ def calculate_dollar_value_of_bribes_per_pool(
     return pool_bribe_totals
 
 
-def calculate_dollar_vlaura_values(
+def _calculate_dollar_vlaura_values(
         total_bribes_per_pool: Dict[str, Dict], choices: List[str], scores: List[str],
 ) -> Optional[Dict[str, Dict]]:
     """
@@ -130,3 +131,27 @@ def calculate_dollar_vlaura_values(
             '$/vlAURA': bribes_info['totals'] / pools_voting_power[pool]
         }
     return pool_final_bribes_info
+
+
+def get_bribes(
+        snapshot: Dict, bribes: List[Dict], current_proposal_index: int
+) -> Optional[Dict[str, Dict]]:
+    """
+    Main pipeline function that goes through all functions from above and calculates totals, tokens,
+    bribes usd prices and $/vlAURA
+    """
+    snapshot_choices = snapshot['choices']
+    snapshot_scores = snapshot['scores']
+    # First, filter out bribes for current proposal
+    filtered_bribes = _filter_out_bribes_for_current_proposal(
+        bribes, snapshot_choices, current_proposal_index
+    )
+    # Get prices from Coingecko for each token bribed
+    bribes_tokens_prices = _get_bribes_tokens_prices(filtered_bribes)
+    # Calculate total value of bribes per pool in USD
+    pools_totals = _calculate_dollar_value_of_bribes_per_pool(filtered_bribes, bribes_tokens_prices)
+    # Finalize bribes data and add $/vlAURA info
+    final_bribes_data = _calculate_dollar_vlaura_values(
+        pools_totals, snapshot_choices, snapshot_scores
+    )
+    return final_bribes_data

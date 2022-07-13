@@ -1,49 +1,15 @@
 from decimal import Decimal
 from unittest.mock import MagicMock
 
-from aura_voter.data_collectors.data_processors import calculate_dollar_value_of_bribes_per_pool
-from aura_voter.data_collectors.data_processors import calculate_dollar_vlaura_values
+from aura_voter.data_collectors.data_processors import _calculate_dollar_value_of_bribes_per_pool  # noqa
+from aura_voter.data_collectors.data_processors import _calculate_dollar_vlaura_values  # noqa
+from aura_voter.data_collectors.data_processors import _filter_out_bribes_for_current_proposal  # noqa
+from aura_voter.data_collectors.data_processors import _get_bribes_tokens_prices  # noqa
 from aura_voter.data_collectors.data_processors import extract_pools_with_target_token_included
-from aura_voter.data_collectors.data_processors import filter_out_bribes_for_current_proposal
-from aura_voter.data_collectors.data_processors import get_bribes_tokens_prices
 from aura_voter.tests.test_data.balancer_graph_data import BALANCER_POOLS_DATA
 from aura_voter.tests.test_data.bribes_graph_data import AURA_BRIBES_DATA
-
-# Test choices for snapshot round 0x515649bddfb0e0d637745e8654616b03b371bb444f90f327064e7eee6052aff8
 from aura_voter.tests.test_data.test_data import ACTIVE_PROPOSAL_DATA
 
-TEST_CHOICES = {'1': 'veBAL', '2': '50/50 AURA/WETH', '3': 'Stable auraBAL/B-80BAL-20WETH',
-                '4': 'Stable DAI/USDC/USDT', '5': '50/50 SNX/WETH', '6': '60/40 WETH/DAI',
-                '7': '50/50 YFI/WETH', '8': 'MetaStable rETH/WETH', '9': '80/20 D2D/USDC',
-                '10': 'MetaStable wstETH/WETH', '11': '80/20 VITA/WETH', '12': '50/50 USDT/WETH',
-                '13': '80/20 UNN/WETH', '14': '50/50 Silo/WETH', '15': '50/50 NOTE/WETH',
-                '16': '80/20 GRO/WETH', '17': 'bb-a-USDT/bb-a-DAI/bb-a-USDC', '18': '50/50 D2D/BAL',
-                '19': '70/30 WETH/FEI', '20': '50/50 USDC/WETH', '21': '80/20 TCR/DAI',
-                '22': '50/50 MATIC/WETH', '23': '50/50 WBTC/WETH', '24': '50/50 VITA/WETH',
-                '25': '80/20 LDO/WETH', '26': '80/20 MTA/WETH', '27': '50/50 LINK/WETH',
-                '28': '50/50 REN/WETH', '29': '50/50 COMP/WETH', '30': '80/20 GNO/WETH',
-                '31': '50/50 UMA/USDC', '32': 'Stable WBTC/renBTC/sBTC', '33': '80/20 HAUS/WETH',
-                '34': '50/50 GNO/COW', '35': '50/50 COW/WETH', '36': '50/25/25 OHM/DAI/WETH',
-                '37': '80/20 FDT/WETH', '38': '80/20 BADGER/WBTC', '39': '80/20 NOTE/WETH',
-                '40': '80/20 WNCG/WETH', '41': '80/20 CREAM/WETH', '42': '80/20 PAL/USDC',
-                '43': '50/50 DFX/WETH', '44': 'Stable B-80BAL-20WETH/sdBal',
-                '45': 'Stable FIAT/DAI/USDC', '46': '33/33/33 auraBAL/graviAURA/WETH',
-                '47': 'a-33/33/33 DPX/RDPX/WETH', '48': 'a-33/33/33 WBTC/WETH/USDC',
-                '49': 'a-Stable VST/DAI/USDT/USDC', '50': 'a-80/20 MAGIC/WETH',
-                '51': 'a-80/20 PICKLE/WETH', '52': 'a-80/20 LINK/WETH', '53': 'a-80/20 GMX/WETH',
-                '54': 'a-Stable MAI/USDT/USDC', '55': 'a-50/50 VSTA/WETH', '56': 'a-80/20 TCR/WETH',
-                '57': 'a-Stable DAI/USDT/USDC', '58': 'a-80/20 GNO/WETH', '59': 'a-60/40 MCB/WETH',
-                '60': 'a-60/40 BAL/WETH', '61': 'a-80/20 CRE8R/WETH',
-                '62': 'p-25/25/25/25 WMATIC/USDC/WETH/BAL', '63': 'p-33/33/33 WBTC/USDC/WETH',
-                '64': 'p-50/50 BAL/TEL', '65': 'p-40/40/20 WMATIC/MTA/WETH',
-                '66': 'p-33/33/33 AVAX/WETH/SOL', '67': 'p-Stable USDC/FRAX/USDT/UST',
-                '68': 'p-Stable USDC/TUSD/DAI/USDT', '69': 'p-Stable USDC/DAI/miMATIC/USDT',
-                '70': 'p-MetaStable WMATIC/stMATIC', '71': 'p-Stable WBTC/renBTC',
-                '72': 'p-50/50 WBTC/WETH', '73': 'p-80/20 BANK/WETH', '74': 'p-80/20 SAND/WMATIC',
-                '75': 'p-50/50 USDC/WETH', '76': 'p-20/20/20/20/20 USDC/LINK/WETH/BAL/AAVE',
-                '77': 'p-80/20 VISION/WETH', '78': 'p-80/20 THX/USDC',
-                '79': 'p-60/20/20 TEL/USDC/BAL', '80': 'p-25/25/25/25 LINK/WETH/BAL/AAVE',
-                '81': 'p-MetaStable WMATIC/MaticX', '82': 'p-40/40/20 TEL/DFX/USDC'}
 
 EXPECTED_FILTERED_BRIBES = {
     'p-25/25/25/25 WMATIC/USDC/WETH/BAL': [
@@ -157,9 +123,10 @@ def test_filter_out_bribes_for_current_proposal_happy():
     """
     Test against stale dataset for 3rd round of bribes
     """
-    bribes = filter_out_bribes_for_current_proposal(
+    bribes = _filter_out_bribes_for_current_proposal(
         AURA_BRIBES_DATA['bribes'],
-        TEST_CHOICES, current_proposal_index=TEST_PROPOSAL_HH_INDEX
+        ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
+        current_proposal_index=TEST_PROPOSAL_HH_INDEX
     )
     assert dict(bribes) == EXPECTED_FILTERED_BRIBES
 
@@ -168,8 +135,9 @@ def test_filter_out_bribes_for_current_proposal_empty():
     """
     Test that incorrect voting round index returns no bribes
     """
-    assert dict(filter_out_bribes_for_current_proposal(
-        AURA_BRIBES_DATA['bribes'], TEST_CHOICES, current_proposal_index=135
+    assert dict(_filter_out_bribes_for_current_proposal(
+        AURA_BRIBES_DATA['bribes'],
+        ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'], current_proposal_index=135
     )) == {}
 
 
@@ -184,7 +152,7 @@ def test_get_bribes_tokens_prices(mocker):
             return_value=STALE_TOKEN_PRICES)
         )
     )
-    prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
+    prices = _get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
     for _, bribes in EXPECTED_FILTERED_BRIBES.items():
         for bribe in bribes:
             # Make sure that each token is priced
@@ -201,7 +169,7 @@ def test_get_bribes_tokens_prices_empty(mocker):
             return_value={}
         ))
     )
-    prices = get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
+    prices = _get_bribes_tokens_prices(EXPECTED_FILTERED_BRIBES)
     assert prices == {}
 
 
@@ -226,7 +194,7 @@ def test_calculate_dollar_value_of_bribes_per_pool(mocker):
             )
         ))
     )
-    pool_bribes = calculate_dollar_value_of_bribes_per_pool(
+    pool_bribes = _calculate_dollar_value_of_bribes_per_pool(
         bribes_filtered=EXPECTED_FILTERED_BRIBES,
         token_prices={
             '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': Decimal('1.00099'),
@@ -241,11 +209,11 @@ def test_calculate_dollar_value_of_bribes_per_pool(mocker):
 
 
 def test_calculate_dollar_value_of_bribes_per_pool_no_bribes():
-    assert not calculate_dollar_value_of_bribes_per_pool({}, {})
+    assert not _calculate_dollar_value_of_bribes_per_pool({}, {})
 
 
 def test_calculate_dollar_vlaura_values():
-    final_pool_info = calculate_dollar_vlaura_values(
+    final_pool_info = _calculate_dollar_vlaura_values(
         total_bribes_per_pool=EXPECTED_POOL_TOTALS_IN_DOLLAR,
         choices=ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
         scores=ACTIVE_PROPOSAL_DATA['proposals'][0]['scores']
@@ -259,7 +227,7 @@ def test_calculate_dollar_vlaura_values():
 
 
 def test_calculate_dollar_vlaura_values_empty():
-    assert not calculate_dollar_vlaura_values(
+    assert not _calculate_dollar_vlaura_values(
         total_bribes_per_pool=EXPECTED_POOL_TOTALS_IN_DOLLAR,
         choices=ACTIVE_PROPOSAL_DATA['proposals'][0]['choices'],
         scores=[]
