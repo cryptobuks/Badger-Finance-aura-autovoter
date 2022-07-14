@@ -42,6 +42,7 @@ def _filter_out_bribes_for_current_proposal(
     set manually for each bribe round
     """
     if not all([bribes, choices, current_proposal_index]):
+        logger.warning("Entry data for bribes filtering is missing")
         return
     bribes_filtered = defaultdict(list)
     for bribe in bribes:
@@ -66,6 +67,7 @@ def _get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optiona
     - Gets token prices in one query from coingecko
     """
     if not bribes_filtered:
+        logger.warning("No bribes found so cannot fetch token prices")
         return
     gecko = CoinGeckoAPI()
     # First, gather all token addresses from bribes to fetch their prices in one single GC query
