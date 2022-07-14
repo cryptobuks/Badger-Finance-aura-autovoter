@@ -35,6 +35,7 @@ query {{
     start
     end
     snapshot
+    scores
     choices
     network
     state
@@ -99,6 +100,7 @@ query {{
     end
     snapshot
     choices
+    scores
     network
     state
     author
@@ -127,6 +129,8 @@ def get_gauge_weight_snapshot() -> Optional[Dict]:
             break
         gauge_proposal = None
         for proposal in result['proposals']:
+            if proposal['state'] != SNAPSHOT_STATE_ACTIVE:
+                continue
             match = re.match(r"Gauge Weight for Week of .+", proposal['title'])
             number_of_choices = len(proposal['choices'])
             current_timestamp = web3.eth.getBlock(web3.eth.get_block_number())['timestamp']

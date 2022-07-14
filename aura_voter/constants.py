@@ -36,6 +36,9 @@ BOT_USERNAME = "Aura Autovoter Bot"
 SNAPSHOT_MIN_AMOUNT_POOLS = 10
 SNAPSHOT_STATE_ACTIVE = "active"
 SNAPSHOT_AURA_OGTEST = "OG test"
+CURRENCY_USD = "usd"
+
+CG_ETHEREUM_CHAIN_ID = "ethereum"
 
 # Aura to Snapshot pool names
 BADGER_WBTC_POOL_NAME = "80/20 BADGER/WBTC"

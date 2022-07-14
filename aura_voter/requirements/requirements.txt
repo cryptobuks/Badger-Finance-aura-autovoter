@@ -7,3 +7,4 @@ rich==12.2.0
 boto3==1.21.42
 simplejson==3.17.6
 discord.py==1.7.3
+pycoingecko==2.2.0
