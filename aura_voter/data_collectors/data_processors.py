@@ -73,7 +73,8 @@ def _get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optiona
     for _, bribes in bribes_filtered.items():
         token_addresses.update([bribe['token'] for bribe in bribes])
     token_prices = gecko.get_token_price(
-        id=CG_ETHEREUM_CHAIN_ID, contract_addresses=list(token_addresses), vs_currencies=CURRENCY_USD
+        id=CG_ETHEREUM_CHAIN_ID,
+        contract_addresses=list(token_addresses), vs_currencies=CURRENCY_USD
     )  # type: Dict[str, Dict[str, float]]
     # Flatten return dict as we just need only USD price
     return {
