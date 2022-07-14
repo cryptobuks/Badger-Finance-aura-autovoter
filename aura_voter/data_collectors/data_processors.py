@@ -7,13 +7,13 @@ from typing import Optional
 from pycoingecko import CoinGeckoAPI
 from web3 import Web3
 
+from aura_voter.constants import CG_ETHEREUM_CHAIN_ID
 from aura_voter.constants import CURRENCY_USD
+from aura_voter.rich_logger import logger
 from aura_voter.utils import extract_pools_voting_power
 from aura_voter.utils import get_abi
 from aura_voter.utils import map_choice_id_to_pool_name
 from aura_voter.web3 import get_web3
-
-CG_CHAIN_ID = "ethereum"
 
 
 def extract_pools_with_target_token_included(
@@ -73,11 +73,12 @@ def _get_bribes_tokens_prices(bribes_filtered: Dict[str, List[Dict]]) -> Optiona
     for _, bribes in bribes_filtered.items():
         token_addresses.update([bribe['token'] for bribe in bribes])
     token_prices = gecko.get_token_price(
-        id=CG_CHAIN_ID, contract_addresses=list(token_addresses), vs_currencies=CURRENCY_USD
+        id=CG_ETHEREUM_CHAIN_ID, contract_addresses=list(token_addresses), vs_currencies=CURRENCY_USD
     )  # type: Dict[str, Dict[str, float]]
     # Flatten return dict as we just need only USD price
     return {
-        token_addr: Decimal(price_data['usd']) for token_addr, price_data in token_prices.items()
+        token_addr: Decimal(
+            price_data[CURRENCY_USD]) for token_addr, price_data in token_prices.items()
     }
 
 
@@ -89,6 +90,7 @@ def _calculate_dollar_value_of_bribes_per_pool(
     For each pool it returns a dict that contains total amount of bribes in $ and tokens bribed
     """
     if not bribes_filtered or not token_prices:
+        logger.warning("Didn't find bribes for current voting round or token prices are missing")
         return
     web3 = get_web3()
     pool_bribe_totals = defaultdict(dict)
@@ -101,7 +103,10 @@ def _calculate_dollar_value_of_bribes_per_pool(
             token_amount = (
                 Decimal(bribe['amount']) / 10 ** token_contract.functions.decimals().call()
             )
-            bribe_value_in_usd = token_amount * token_prices[bribe['token']]
+            token_price = token_prices.get(bribe['token'])
+            if not token_price:
+                logger.warning("Didn't find token price", extra={"token": bribe['token']})
+            bribe_value_in_usd = token_amount * token_price
             if pool_bribe_totals[pool].get('totals'):
                 pool_bribe_totals[pool]['totals'] += bribe_value_in_usd
             else:
@@ -143,6 +148,7 @@ def get_bribes(
     snapshot_choices = snapshot.get('choices')
     snapshot_scores = snapshot.get('scores')
     if not all([snapshot_scores, snapshot_choices, bribes, current_proposal_index]):
+        logger.warning("Cannot fetch bribes because some parameters are missing")
         return
     # First, filter out bribes for current proposal
     filtered_bribes = _filter_out_bribes_for_current_proposal(
