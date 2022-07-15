@@ -36,6 +36,8 @@ def get_treasury_controlled_naked_graviaura() -> Decimal:
     abi = get_abi("ERC20")
     contract = web3.eth.contract(address=web3.toChecksumAddress(GRAVIAURA), abi=abi)
     treasury_graviaura_controlled_amount = 0.0
+    # TODO: Maybe we need to fetch balanceOf at specific block to represent actual voting power on
+    # TODO: Snapshot so our calculations in general will be correct
     for wallet in TREASURY_WALLETS:
         treasury_graviaura_controlled_amount += contract.functions.balanceOf(
             web3.toChecksumAddress(wallet)

@@ -16,6 +16,7 @@ from aura_voter.data_collectors.graph_collectors import get_all_balancer_pools
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
+from aura_voter.data_collectors.on_chain_collectors import get_treasury_controlled_naked_graviaura
 from aura_voter.data_collectors.snapshot_collectors import get_current_hh_proposal_round
 from aura_voter.data_collectors.snapshot_collectors import get_gauge_weight_snapshot
 from aura_voter.discord import send_code_block_to_discord
@@ -36,13 +37,19 @@ def collect_and_vote(dry_run=True):
         f"> Fetched gauge proposal snapshot: {snapshot['id']}",
         username=BOT_USERNAME,
     )
-    amount_of_locked_aura = get_locked_graviaura_amount()
     send_message_to_discord(
         "🗳️🗳️🗳️🗳️ New voting round AURA 🗳️🗳️🗳️🗳️",
         username=BOT_USERNAME
     )
+    amount_of_locked_aura = get_locked_graviaura_amount()
+    amount_of_treasury_owned_naked_graviaura = get_treasury_controlled_naked_graviaura()
     send_message_to_discord(
         f"> Locked AURA amount is: {round(amount_of_locked_aura, 2)}",
+        username=BOT_USERNAME
+    )
+    send_message_to_discord(
+        f"> Treasury owned naked graviAURA "
+        f"amount is: {round(amount_of_treasury_owned_naked_graviaura, 2)}",
         username=BOT_USERNAME
     )
     choices = map_choice_id_to_pool_name(snapshot['choices'])
