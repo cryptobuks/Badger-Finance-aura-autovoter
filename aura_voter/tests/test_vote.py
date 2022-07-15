@@ -51,6 +51,9 @@ def test_voter(mocker):
                             decimals=MagicMock(return_value=MagicMock(
                                 call=MagicMock(return_value=decimals)
                             )),
+                            balanceOf=MagicMock(return_value=MagicMock(
+                                call=MagicMock(return_value=1000000)
+                            )),
                             getPoolTokens=MagicMock(return_value=MagicMock(
                                 call=MagicMock(return_value=(
                                     [
