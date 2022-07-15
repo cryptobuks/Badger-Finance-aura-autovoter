@@ -4,10 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 from web3 import Web3
 
+from aura_voter.constants import TREASURY_WALLETS
 from aura_voter.constants import ZERO_ADDRESS
 from aura_voter.data_collectors.on_chain_collectors import does_pool_have_gauge
 from aura_voter.data_collectors.on_chain_collectors import get_balancer_pool_token_balance
 from aura_voter.data_collectors.on_chain_collectors import get_locked_graviaura_amount
+from aura_voter.data_collectors.on_chain_collectors import get_treasury_controlled_naked_graviaura
 
 
 def test_get_locked_aura_amount(mocker):
@@ -32,6 +34,34 @@ def test_get_locked_aura_amount(mocker):
     )
     bve_cvx_locked = get_locked_graviaura_amount()
     assert bve_cvx_locked == balance / 10 ** decimals
+
+
+def test_get_treasury_controlled_naked_graviaura(mocker):
+    """
+    Total treasury owned bveCVX is as SUM of all treasury wallets nakedAURA graviAURA balances
+    """
+    balance = 10000000000000000000
+    balance_mul_by_wallets = balance * len(TREASURY_WALLETS)
+    decimals = 18
+    mocker.patch(
+        "aura_voter.data_collectors.on_chain_collectors.get_web3",
+        return_value=MagicMock(eth=MagicMock(
+            contract=MagicMock(
+                return_value=MagicMock(
+                    functions=MagicMock(
+                        balanceOf=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=balance)
+                        )),
+                        decimals=MagicMock(return_value=MagicMock(
+                            call=MagicMock(return_value=decimals)
+                        )),
+                    )
+                )
+            )
+        ))
+    )
+    treasury_owned_bvecvx = get_treasury_controlled_naked_graviaura()
+    assert treasury_owned_bvecvx == balance_mul_by_wallets / 10 ** decimals
 
 
 def test_get_balancer_pool_token_balance(mocker):
